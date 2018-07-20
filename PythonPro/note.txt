@@ -1,0 +1,2 @@
+https://www.cnblogs.com/jokerspace/p/6685388.html
+用pyaudio做一个声控打开浏览器的小程序
