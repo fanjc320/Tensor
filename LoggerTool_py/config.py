@@ -8,7 +8,7 @@ UseFilter = True
 # 需要查看的表和字段，在这里过滤,需要查看的字段请自行添加
 TB_Filter = {
 "Activity":["iActivityID","dtEventTime","vopenid","ChangedType","progress","param","param1"],
-
-
+"TeamFlow":["vRoleID","dtEventTime","TeamOp"],
+"TaskFlow":["vRoleID","dtEventTime","iTaskType","iTaskID","SubId","ChangedType","taskname","stepname"],
 
 }

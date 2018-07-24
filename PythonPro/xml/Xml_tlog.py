@@ -10,13 +10,14 @@ class NodeHandler(xml.sax.ContentHandler):
 		index = 1
 		self.key = "Begin"
 		self.all = {}
+		self.macros = {}
 		self.content = []
 		
 	def printall(self):
 			#table_str = str(self.all)	
-			with open("xmltables.txt".format(),'w') as f:
+			with open("xmltables_test.txt".format(),'w') as f:
 				for k,v in self.all.items():
-					newlist = "	".join(v)
+					newlist = "|".join(v)
 					print(newlist,file=f)
 		
 		#for k,v in self.all.items():
@@ -41,12 +42,13 @@ class NodeHandler(xml.sax.ContentHandler):
 	def endElement(self,tag):
 		#print("-------------end_tag ",tag)
 		if(tag=="struct"):
-			self.all[self.key] = copy.deepcopy(self.content)
+			# self.all[self.key] = copy.deepcopy(self.content)
 			#print(">>>>>>self.content.size ",len(self.content))
 			self.content.clear()
 		if(tag=="macrosgroup"):
-			#self.all[self.key] = copy.deepcopy(self.content) #只保留struct，即表，不保留解释宏，所以注掉
+			self.all[self.key] = copy.deepcopy(self.content) #只保留struct，即表，不保留解释宏，所以注掉
 			#print(">>>>>>self.content.size ",len(self.content))
+			
 			self.content.clear()
 		
 # 内容事件处理
