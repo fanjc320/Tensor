@@ -9,11 +9,23 @@ import sys
 
 from config import *
 from colorama import init
-from termcolor import colored
+# from termcolor import colored
 init()
 
 def prRed(skk,e='\n'): 
     print("\033[91m {}\033[00m" .format(skk),end=e)
+
+
+def OutResult(content,split='',OutType = 1):
+	if OutToFile == True:
+		with open(OutLogPath,'a',encoding='utf8') as f:
+			print(content,end=split,file=f)
+	elif OutType == 1:
+		print(content,end=split)
+	elif OutType == 2:
+		prRed(content,e=':')
+		
+	
 
 with open(LogPath,'r',encoding='utf8') as f:
     f.seek(0,0)
@@ -31,17 +43,22 @@ with open(LogPath,'r',encoding='utf8') as f:
                 field = TB_List[i] #字段名
                 if len(TB_List)>i:
                     if UseFilter and TB_Filter[tbname].count(field)==1:
-                        prRed(field,e=':')
+                        # prRed(field,e=':')
+                        OutResult(field,split=':',OutType=2)
                         
                     # macroname = Xml_tlog.macro(field)
                     # if macroname:
                         # print(macroname)
                     else:
-                        print(field,end=':')
+                        # print(field,end=':')
+                        OutResult(field,split=':',OutType=1)
                 else:
-                    print("NULL",end=':')
-                print(strs[i],end=' ')
-            print()
+                    # print("NULL",end=':')
+                    OutResult("NULL",split=':',OutType=1)
+                # print(strs[i],end=' ')
+                OutResult(strs[i],split=' ',OutType=1)
+            # print()
+            OutResult("")
                     
         # time.sleep(0.5)#不可在cygwin下运行
 
