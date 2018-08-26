@@ -1,8 +1,8 @@
 import wave
 import pyaudio
 import numpy
-import pylab
- 
+import pylab as pl
+
 #打开WAV文档，文件路径根据需要做修改
 wf = wave.open("E:\\Tensor\\PyAudio\\res\\wow.wav", "rb")
 #创建PyAudio对象
@@ -30,11 +30,11 @@ time = numpy.arange(0,nframes)*(1.0/framerate)
 time = time[0:int(len(time)/2)]
 # 绘制波形图
 print("len(time):",len(time),"len(wav)",len(wave_data[0]));
-pylab.plot(time, wave_data[0])
-pylab.subplot(212)
-pylab.plot(time, wave_data[1], c="g")
-pylab.xlabel("time (seconds)")
-pylab.show()
+pl.plot(time, wave_data[0])
+pl.subplot(212)
+pl.plot(time, wave_data[1], c="g")
+pl.xlabel("time (seconds)")
+pl.show()
 #
 # 采样点数，修改采样点数和起始位置进行不同位置和长度的音频波形分析
 N=44100
@@ -49,5 +49,5 @@ d=int(len(c)/2)
 #仅显示频率在4000以下的频谱
 while freq[d]>4000:
 	d-=10
-pylab.plot(freq[:d-1],abs(c[:d-1]),'r')
-pylab.show()
+pl.plot(freq[:d-1],abs(c[:d-1]),'r')
+pl.show()
