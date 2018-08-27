@@ -3,6 +3,38 @@ from scipy.fftpack import fft,ifft
 import matplotlib.pyplot as plt
 import seaborn
 
+def wavread(path):
+    wavfile =  we.open(path,"rb")
+    params = wavfile.getparams()
+    print("params:",params)
+    framesra,frameswav= params[2],params[3]
+    #readframes()
+    #得到每一帧的声音数据，返回的值是二进制数据，在python中用字符串表示二进制数据datawav = wavfile.readframes(frameswav)
+    datawav = wavfile.readframes(frameswav)
+    wavfile.close()
+    datause = np.fromstring(datawav,dtype = np.short)
+    datause.shape = -1,2
+    datause = datause.T
+
+    time = np.arange(0, frameswav) * (1.0/framesra)
+    print("time:",time.shape)
+    return datause,time
+
+def wavreads(path):
+    wavfile =  we.open(path,"rb")
+    params = wavfile.getparams()
+    print("params:",params)
+    framesra,frameswav= params[2],params[3]
+    #readframes()
+    #得到每一帧的声音数据，返回的值是二进制数据，在python中用字符串表示二进制数据datawav = wavfile.readframes(frameswav)
+    datawav = wavfile.readframes(frameswav)
+    wavfile.close()
+    datause = np.fromstring(datawav,dtype = np.short)
+
+    time = np.arange(0, frameswav) * (1.0/framesra)
+    print("time:",time.shape)
+    return datause,time
+
 def show(ori_func,ft,sampling_period = 5,half=True):
 	n = len(ori_func)
 	interval = sampling_period/n
@@ -63,7 +95,7 @@ def TestShow():
 	# y = np.fft.fft(x) 
 	# show(x, y) 
 
-TestShow()
+# TestShow()
 # range()函数
 
 # 函数说明： range(start, stop[, step]) -> range object，根据start与stop指定的范围以及step设定的步长，生成一个序列。
