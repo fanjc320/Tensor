@@ -73,7 +73,7 @@ def Func2():
 	time = np.arange(0,nframes)*(1.0/framerate)
 	time = time[0:int(len(time))] #单声道
 	print("len(time):",len(time),"len(wav)",len(wave_data));
-	plt.plot(time, wave_data)
+	# plt.plot(time, wave_data)
 	# plt.show()
 	
 	plt.figure(num=3,figsize=(8,5),)
@@ -94,28 +94,21 @@ def Func2():
 	plt.figure(num=4,figsize=(8,5),)
 	
 	yyi = ifft(yf[:clip]).real
-	testi = np.ndarray(shape=(2,1),buffer=np.array([181.,488.]),dtype=float)
-	
-	yyii = yyi.astype(np.int32)
-	yy_te = np.around(yyi)
-	print("---",yyi[0]," ",int(round(yyi[0]))," yy_te ",yy_te[:20])
-	print()
-	testii = testi.astype(np.int32)
-	yyiif = yyii.astype(float)
-	yyii_copy = yyii.copy()
-	# plt.plot(time[:clip],yyi)
-	print("type(yyi)",type(yyi),"dtype:",yyi.dtype,yyii.dtype,yyiif.dtype)
-	print("type(testi)",type(testi),"dtype:",testi.dtype,testii.dtype,"testii",testii)
-	print(" yyi",yyi[:20]," yyii",yyii[:20]," yyiif",yyiif[:20])
-	print("yyii_copy",yyii_copy);
+	# yyii = yyi.astype(np.int32),180.9999999,会变成180
+	yyii = np.around(yyi).astype(np.short)
+	print("---",yyi[0]," ",int(round(yyi[0]))," yyii ",(yyii[:20]).astype(np.int32))
+	plt.subplot(211)
+	plt.plot(time[:clip], wave_data[:clip])
+	plt.subplot(212)
+	plt.plot(time[:clip], yyii[:clip],'b-')
 	
 	# data = wave_data.tostring()
 	# data = str_data.decode('iso-8859-1')
 	Numb = 20;
-	str = wave_data.tostring()
+	
 	print("str_data",str_data[:Numb])
 	print("str_data(fromstring)->wave_data",wave_data[:Numb])
-	print("wave_data(tostring)->str",str[:Numb]);
+	
 	print("wave_data(fft)->yf(ifft)->yyi",yyi[:Numb])
 	print("wave_data(fft)->yf(ifft)->yyi(astypeint)->yyii",yyii[:Numb])
 	print("yyistr",(yyi.tostring())[:Numb])
@@ -124,7 +117,23 @@ def Func2():
 	wf1.setsampwidth(sampwidth)
 	wf1.setframerate(framerate)
 	# wf1.writeframes(str)
-	wf1.writeframes(yyi.tostring())
+	print("len===",len(wave_data),len(yyii))
+	res = wave_data-yyii
+	test= wave_data.tolist()
+	res = res.tolist()
+	print("-----------00-------",np.where(wave_data!=0),"wave_data type:",type(wave_data[0]))
+	print("-----------11-------",np.where(yyii!=0),"yyii type:",type(wave_data[0]))
+	# print("-----------22-------",res)
+	print("--------!=0----------",np.where(res!=0))
+	print("--------==0----------",np.where(res==0))
+	# print(" np.where ",type(test),np.where(test!=0))
+	
+	str = wave_data.tostring()
+	print("wave_data(tostring)->str",str[:Numb]);
+	stri = yyii.tostring()
+	print("    yyii(tostring)->stri",stri[:Numb]);
+	
+	wf1.writeframes(yyii.tostring())
 	wf1.close()
 	
 	'''
@@ -145,8 +154,26 @@ def Func2():
 	plt.plot(freq[:d-1],abs(c[:d-1]),'r')
 	
 	'''
-	plt.show()
+	# plt.show()
 	
+def TestWhere():
+	# ll = list(range(1,10,1))
+	# print(ll)
+	# print("---- ",np.where(ll>5))
+	
+	
+	print(np.where([[True,False],[True,True]],
+			[[1,2],[3,4]],
+			[[9,8],[7,6]])
+	)
+	
+	x = np.arange(16)
+	print("# ",type(x))
+	print(x[np.where(x>-1)])
+	
+	x = np.arange(8).reshape(-1,4)
+	print("--",x)
+	print(np.where(x>5)) #返回两个数组，第一个，满足条件的所在行，第二个，满足条件的所在列
 	
 def FromToStr():
 	ali = array.array('i',[1,2,3])
@@ -157,8 +184,9 @@ def FromToStr():
 	
 if __name__ == "__main__":
     # Func1()
-	FromToStr()
+	# FromToStr()
 	Func2()
+	# TestWhere()
 	
 # Wave_read.readframes(n)
 # Reads and returns at most n frames of audio, as a string of bytes.
