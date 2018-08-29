@@ -37,12 +37,16 @@ def Func3(inFile,outFile,figNumb=1):
 	
 	plt.subplot(312)
 	# clip1 = len(time1)
-	clip1 = 300 #去掉500后的高频，声音内容不变，稍显沉闷,300几乎还能听出来hello
+	clip1 = 800 #去掉500后的高频，声音内容不变，稍显沉闷,300几乎还能听出来hello
 	# wav_fft1_clip = wav_fft1[:clip1]
-	arr0 = np.zeros(len(xf1)-2*clip1,dtype=np.short)
 	# arr0 = np.zeros(len(xf1)-5*clip1,dtype=np.short) #减少对称频谱之间的间距 慢慢变得尖锐有噪声
 	#等价于 wav_fft1[1000:25000] = 0,# 去掉高频部分可以降噪!!!!!!!!
-	wav_fft1_conc = np.concatenate([wav_fft1[:clip1],arr0,wav_fft1[-clip1:]])
+	# wav_fft1_conc = np.concatenate([wav_fft1[:clip1],arr0,wav_fft1[-clip1:]])
+	wav_fft1_conc = wav_fft1[:]
+	#带通滤波
+	wav_fft1_conc[0:200]=0
+	wav_fft1_conc[800:-800]=0
+	wav_fft1_conc[-200:]=0
 	print("len(wav_fft1_conc)",len(wav_fft1_conc))
 	plt.title("wav_fft1_conc clip1:"+str(clip1))
 	plt.plot(xf1[:len(wav_fft1_conc)][:clip1],wav_fft1_conc[:clip1],'b')
@@ -61,17 +65,11 @@ def Func3(inFile,outFile,figNumb=1):
 
 	wavWrite(wav_ifft_as,outFile,channels,sampwidth,framerate)
 	
-	# wave_data_str1 = wave_data1.tostring()
-	# wav_ifft_1_str1 = wav_ifft_as.tostring()
-	# print("wave_data_str1  ",wave_data_str1[:Numb])
-	# print("wav_ifft_1_str1",wav_ifft_1_str1[:Numb])
-	
 	plt.tight_layout()
 	
 	
 if __name__ == "__main__":
 	
-	Func3("./hello11s.wav","./hello11s_compare.wav",1)
-	Func3("./hello21s.wav","./hello21s_compare.wav",2)
+	Func3("./hello11s.wav","./hello11s_daitong.wav",1)
 	
 	plt.show()

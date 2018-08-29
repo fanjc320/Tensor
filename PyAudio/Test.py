@@ -28,19 +28,19 @@ def TestClip2():
 	print(col_r2,col_r2.shape)
 
 #索引为数值
-TestClip3():
+def TestClip3():
 	a = np.array([[1,2],[3,4],[5,6]])
 	print(a[[0,1,2],[0,1,0]]) # Prints "[1 4 5]"
-	print np.array([a[0, 0], a[1, 1], a[2, 0]])  # Prints "[1 4 5]"
+	print(np.array([a[0, 0], a[1, 1], a[2, 0]]))  # Prints "[1 4 5]"
 	# When using integer array indexing, you can reuse the same
 	# element from the source array:
-	print a[[0, 0], [1, 1]]  # Prints "[2 2]"  索引为（0,1） （0，1）
+	print(a[[0, 0], [1, 1]])  # Prints "[2 2]"  索引为（0,1） （0，1）
 	# Equivalent to the previous integer array indexing example
-	print np.array([a[0, 1], a[0, 1]])  # Prints "[2 2]"
+	print(np.array([a[0, 1], a[0, 1]]))  # Prints "[2 2]"
 	# Create a new array from which we will select elements
 	a = np.array([[1,2,3], [4,5,6], [7,8,9], [10, 11, 12]])
 	
-	print a  # prints "array([[ 1,  2,  3],
+	print(a)  # prints "array([[ 1,  2,  3],
 			#                [ 4,  5,  6],
 			#                [ 7,  8,  9],
 			#                [10, 11, 12]])"
@@ -49,12 +49,12 @@ TestClip3():
 	b = np.array([0, 2, 0, 1])
 	
 	# Select one element from each row of a using the indices in b
-	print a[np.arange(4), b]  # Prints "[ 1  6  7 11]"
+	print(a[np.arange(4), b])  # Prints "[ 1  6  7 11]"
 	
 	# Mutate one element from each row of a using the indices in b
 	a[np.arange(4), b] += 10
 	
-	print a  # prints "array([[11,  2,  3],
+	print(a)  # prints "array([[11,  2,  3],
 			#                [ 4,  5, 16],
 			#                [17,  8,  9],
 			#                [10, 21, 12]])
@@ -66,17 +66,20 @@ def TestClip4():
                     # shape as a, where each slot of bool_idx tells
                     # whether that element of a is > 2.
             
-	print bool_idx      # Prints "[[False False]
+	print(bool_idx)      # Prints "[[False False]
 						#          [ True  True]
 						#          [ True  True]]"
 	
 	# We use boolean array indexing to construct a rank 1 array
 	# consisting of the elements of a corresponding to the True values
 	# of bool_idx
-	print a[bool_idx]  # Prints "[3 4 5 6]"
+	print(a[bool_idx])  # Prints "[3 4 5 6]"
 
 	# We can do all of the above in a single concise statement:
-	print a[a > 2]     # Prints "[3 4 5 6]"
+	print(a[a > 2])     # Prints "[3 4 5 6]"
+			
+def TestClip5():
+	a = np.array([[1,2], [3, 4], [5, 6]])
 			
 def TestShow():
 	time = np.arange(0,5,.05) # f=0.005 就是 1s 采样200个,共5s,就是1000个采样点
@@ -140,4 +143,7 @@ def Note():
 	# array([3, 5])
 	print("")
 
-TestClip3()
+TestClip5()
+
+# 对于一维数组来说，python原生的list和numpy的array的切片操作都是相同的。无非是记住一个规则arr_name[start: end: step],就可以了。
+# [:]表示复制源列表

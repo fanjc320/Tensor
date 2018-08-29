@@ -41,7 +41,7 @@ def ifft_asShort(data):
 	wav_ifft_11 = np.around(wav_ifft1).astype(np.short)
 	
 def wavWrite(wavData,outfile,channels,sampwidth,framerate):
-	wf1 = wave.open("./hello11s_guolv.wav",'wb')
+	wf1 = wave.open(outfile,'wb')
 	wf1.setnchannels(channels)
 	wf1.setsampwidth(sampwidth)
 	wf1.setframerate(framerate)
