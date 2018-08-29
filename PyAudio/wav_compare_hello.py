@@ -38,14 +38,15 @@ def Func3(inFile,outFile,figNumb=1):
 	plt.subplot(312)
 	# clip1 = len(time1)
 	clip1 = 1000
+	clip2 = len(time1) - 1000
+	wav_fft1_clip = wav_fft1[:clip1]
 	plt.title("wav_fft1 clip1:"+str(clip1))
-	plt.plot(xf1[:clip1],wav_fft1[:clip1],'b')
-	
-	# #########################################################
-	# plt.figure(2)
-	
-	wav_fft1[1000:25000] = 0,# 去掉高频部分可以降噪!!!!!!!!
-	wav_ifft1 = ifft(wav_fft1[:clip1]).real
+	plt.plot(xf1[:clip1],wav_fft1_clip,'b')
+	arr0 = np.zeros(len(xf1)-clip1,dtype=np.short)
+	np.concatenate([wav_fft1_clip,arr0])
+	# wav_fft1[1000:25000] = 0,# 去掉高频部分可以降噪!!!!!!!!
+	 
+	wav_ifft1 = ifft(wav_fft1_clip).real
 	wav_ifft_as = np.around(wav_ifft1).astype(np.short)
 
 	plt.subplot(313)
