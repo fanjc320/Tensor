@@ -106,12 +106,9 @@ def Func2():
 	# data = str_data.decode('iso-8859-1')
 	Numb = 20;
 	
-	print("str_data",str_data[:Numb])
-	print("str_data(fromstring)->wave_data",wave_data[:Numb])
-	
 	print("wave_data(fft)->yf(ifft)->yyi",yyi[:Numb])
 	print("wave_data(fft)->yf(ifft)->yyi(astypeint)->yyii",yyii[:Numb])
-	print("yyistr",(yyi.tostring())[:Numb])
+
 	wf1 = wave.open("./hello11s_w.wav",'wb')
 	wf1.setnchannels(channels)
 	wf1.setsampwidth(sampwidth)
@@ -154,7 +151,7 @@ def Func2():
 	plt.plot(freq[:d-1],abs(c[:d-1]),'r')
 	
 	'''
-	# plt.show()
+	plt.show()
 	
 def TestWhere():
 	# ll = list(range(1,10,1))

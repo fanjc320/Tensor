@@ -1,0 +1,1 @@
+MoneyFlow	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID	iLevel	Sequence	AfterMoney	iMoney	Reason	SubReason	AddOrReduce	iMoneyType	BeforeMoney	param1	param2	param3	param4	param5	param6	param7	oldMoneyType	makeIndex

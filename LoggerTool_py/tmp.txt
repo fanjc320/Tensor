@@ -1,0 +1,1 @@
+TaskFlow	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID	iLevel	iVipLevel	iTaskType	iTaskID	SubId	iState	PlayerJob	PlayerJoblv	ChangedType	Reason	serialNumb	taskname	stepname
