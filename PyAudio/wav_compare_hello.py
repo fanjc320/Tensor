@@ -58,7 +58,7 @@ def Func3(inFile,outFile,figNumb=1):
 	# print("len(wave_data1)",len(wave_data1),"len(wav_ifft_as)",len(wav_ifft_as))
 	# print("wav_ifft1[:Numb]  ",wav_ifft1[:Numb])
 	# print("wav_ifft_as[:Numb]",wav_ifft_as[:Numb])
-
+	
 	wavWrite(wav_ifft_as,outFile,channels,sampwidth,framerate)
 	
 	# wave_data_str1 = wave_data1.tostring()
@@ -71,7 +71,7 @@ def Func3(inFile,outFile,figNumb=1):
 	
 if __name__ == "__main__":
 	
-	Func3("./hello11s.wav","./hello11s_compare.wav",1)
-	Func3("./hello21s.wav","./hello21s_compare.wav",2)
+	Func3("./res/hello11s.wav","./res/hello11s_compare.wav",1)
+	Func3("./res/hello21s.wav","./res/hello21s_compare.wav",2)
 	
 	plt.show()

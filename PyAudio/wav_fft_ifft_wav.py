@@ -17,7 +17,7 @@ def Func1():
 	
 	fig = plt.figure()
 	
-	wavdata,wavtime = wavreads("./hello11s.wav")
+	wavdata,wavtime = wavreads("./res/hello11s.wav")
 	plt.title("hello11.wav's Frames")
 	plt.subplot(411)
 	plt.plot(wavtime, wavdata,color = 'green')
@@ -52,7 +52,7 @@ def Func2():
 	# fjc_record(OutFile="test0.wav")
 	plt.tight_layout()
 	
-	wf = wave.open("./hello11s.wav", "rb")
+	wf = wave.open("./res/hello11s.wav", "rb")
 #创建PyAudio对象
 	p = pyaudio.PyAudio()
 	stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),
