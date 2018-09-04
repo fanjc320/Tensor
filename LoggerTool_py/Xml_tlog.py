@@ -20,7 +20,9 @@ class NodeHandler(xml.sax.ContentHandler):
 					newlist = "	".join(v)
 					print(newlist,file=f)
 		
-
+	def getAll(self):
+		return self.all;
+		
 	def startElement(self,tag,attributes):
 		#print("start_tag----------:",tag);
 		key = attributes["name"]
@@ -59,6 +61,10 @@ def main(tablename):
 		
 def macro(macroname):
 	return copy.deepcopy( Handler.macros.get(macroname) )
+		
+def getAll():
+	main("")
+	return Handler.getAll();
 		
 if ( __name__ == "__main__" ):
 	main("")
