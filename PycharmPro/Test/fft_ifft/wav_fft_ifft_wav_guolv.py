@@ -5,7 +5,11 @@ from scipy.fftpack import fft,ifft
 import matplotlib.pyplot as plt
 import seaborn
 from scipy.fftpack import fft,ifft
-# import common
+# from Common.common import *
+import com
+import common
+import Common.common
+import py_audio_block
 from common import wavReads,wavWrite
 import array
 plt.tight_layout()

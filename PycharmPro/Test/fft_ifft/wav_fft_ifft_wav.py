@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import seaborn
 from scipy.fftpack import fft,ifft
 # import common
-from common import wavreads
+from Common.common import wavReads
 import array
 plt.tight_layout()
 
@@ -17,7 +17,7 @@ def Func1():
 	
 	fig = plt.figure()
 	
-	wavdata,wavtime = wavreads("./res/hello11s.wav")
+	wavdata,wavtime = wavReads("./res/hello11s.wav")
 	plt.title("hello11.wav's Frames")
 	plt.subplot(411)
 	plt.plot(wavtime, wavdata,color = 'green')
