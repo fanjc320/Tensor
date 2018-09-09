@@ -6,7 +6,9 @@ import numpy as np
 from pyaudio import PyAudio,paInt16
 from datetime import datetime
 import wave
-from Tkinter import *
+# from Tkinter import *
+from tkinter import *
+from _tkinter import *
 import sys
 from ffnn import FFNNVADGeneral
 
@@ -67,18 +69,18 @@ def record_wave():
         string_audio_data = stream.read(NUM_SAMPLES)    
         result = vad.decide(string_audio_data)
         frame = count*NUM_SAMPLES/float(FRAMESHIFT)
-    time = count*NUM_SAMPLES/float(FRAMERATE)  # time=frame*frameshift/framerate
-    logging.info('frame: '+str(frame)+' time: '+str(time)+' prob: '+str(result))  # logging记录字符串，用‘+’连接
+        time = count*NUM_SAMPLES/float(FRAMERATE)  # time=frame*frameshift/framerate
+        logging.info('frame: '+str(frame)+' time: '+str(time)+' prob: '+str(result))  # logging记录字符串，用‘+’连接
         save_buffer.append(string_audio_data)
         count += 1
         #chardet.detect(string_audio_data)  #查看编码类型
-        print "."
+        print(".")
    
     filename = datetime.now().strftime("%Y-%m-%d_%H_%M_%S")+".wav"
     save_wave_file(filename,save_buffer)
       
     save_buffer = []
-    print "filename,saved."
+    print("filename,saved.")
 
 def record_stop():
     # stop record the wave
@@ -95,7 +97,7 @@ if __name__ == "__main__":
     main()
 
 
-
+'''
 # error
 $ bt_audio_service_open: connect() failed: Connection refused (111)
 # 解决: 貌似有多余蓝牙库却没有蓝牙设备
@@ -109,3 +111,4 @@ Cannot connect to server socket err = No such file or directory
 Cannot connect to server request channel
 jack server is not running or cannot be started
 # 是由于usr/share/alsa/alsa.conf默认设置
+'''

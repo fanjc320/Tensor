@@ -4,7 +4,7 @@ import numpy
 import pylab as pl
 
 #打开WAV文档，文件路径根据需要做修改
-wf = wave.open("E:\\Tensor\\PyAudio\\res\\wow.wav", "rb")
+wf = wave.open("..\\..\\res\\wow.wav", "rb")
 #创建PyAudio对象
 p = pyaudio.PyAudio()
 stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),

@@ -70,6 +70,5 @@ def Func3(inFile,outFile,figNumb=1):
 	
 if __name__ == "__main__":
 	
-	Func3("./res/hello11s.wav","./res/hello11s_daitong.wav",1)
-	
+	Func3("../res/hello11s.wav","../res/hello11s_daitong.wav",1)
 	plt.show()

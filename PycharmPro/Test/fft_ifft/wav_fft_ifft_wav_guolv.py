@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 import seaborn
 from scipy.fftpack import fft,ifft
 # from Common.common import *
-import com
 import common
 import Common.common
 import py_audio_block
@@ -169,5 +168,5 @@ def TestStr():
 	
 if __name__ == "__main__":
 	# TestStr()
-	Func3("./hello11s.wav","./hello11s_guolv.wav")
+	Func3("../../res/hello11s.wav","../../res/hello11s_guolv.wav")
 	
