@@ -5,7 +5,7 @@ import seaborn
 import wave
 
 def wavRead(path):
-    wavfile =  we.open(path,"rb")
+    wavfile =  wave.open(path,"rb")
     params = wavfile.getparams()
     print("params:",params)
     framesra,frameswav= params[2],params[3]
@@ -22,7 +22,7 @@ def wavRead(path):
     return datause,time
 
 def wavReads(path):
-    wavfile =  we.open(path,"rb")
+    wavfile =  wave.open(path,"rb")
     params = wavfile.getparams()
     print("params:",params)
     framesra,frameswav= params[2],params[3]

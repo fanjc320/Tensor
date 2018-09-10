@@ -17,13 +17,13 @@ def Func1():
 	
 	fig = plt.figure()
 	
-	wavdata,wavtime = wavReads("./res/hello11s.wav")
+	wavdata,wavtime = wavReads("../../res/hello11s.wav")
 	plt.title("hello11.wav's Frames")
 	plt.subplot(411)
 	plt.plot(wavtime, wavdata,color = 'green')
 	# plt.show()
 	
-	fjc_record_with(wavdata)
+	#fjc_record_with(wavdata)
 	
 	yf=fft(wavdata)
 	xf = np.arange(len(wavdata))
@@ -52,7 +52,7 @@ def Func2():
 	# fjc_record(OutFile="test0.wav")
 	plt.tight_layout()
 	
-	wf = wave.open("./res/hello11s.wav", "rb")
+	wf = wave.open("../../res/hello11s.wav", "rb")
 #创建PyAudio对象
 	p = pyaudio.PyAudio()
 	stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),
@@ -180,9 +180,9 @@ def FromToStr():
 	print("arr",arr)
 	
 if __name__ == "__main__":
-    # Func1()
+    Func1()
 	# FromToStr()
-	Func2()
+	# Func2()
 	# TestWhere()
 	
 # Wave_read.readframes(n)
