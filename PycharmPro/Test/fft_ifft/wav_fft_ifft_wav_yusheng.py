@@ -6,44 +6,45 @@ import matplotlib.pyplot as plt
 import seaborn
 from scipy.fftpack import fft,ifft
 # import common
-from Common.common import wavReads
+from Common.common import wavReads,wavRead
 import array
 plt.tight_layout()
 
 # fft 频谱去掉高频，然后ifft
 def Func1():
-	# fjc_record(OutFile="test0.wav")
-	plt.tight_layout()
-	
 	fig = plt.figure()
-	
-	wavdata,wavtime = wavReads("../../res/hello11s.wav")
-	plt.title("hello11.wav's Frames")
-	plt.subplot(411)
+
+	plt.figure(num=1, figsize=(8, 5), )
+	wavdata,wavtime = wavReads("../../res/yusheng1.wav")
+	print("wav len",len(wavdata),len(wavtime))
+####-----------wavdata-fft-ifft--------------------
+	plt.title("yusheng1.wav's Frames")
+	plt.subplot(311)
+	plt.title("wavdata")
 	plt.plot(wavtime, wavdata,color = 'green')
-	# plt.show()
-	
-	#fjc_record_with(wavdata)
-	
+
 	yf=fft(wavdata)
 	xf = np.arange(len(wavdata))
-	plt.subplot(412)
-	plt.plot(xf[:1000],yf[:1000],'r')
-	# plt.show()
-	
-	plt.subplot(413)
+	plt.subplot(312)
+	plt.title("fft 412")
+	plt.plot(xf, yf, 'r')
+
+	plt.subplot(313)
 	yi = ifft(yf)
+	plt.title("ifft 413")
 	plt.plot(wavtime,yi, 'g')
-	# plt.show()
-	
-	plt.figure(num=3,figsize=(8,5),)
+####--------------fft[:]-ifft[:]-------------------
+	plt.figure(num=2,figsize=(8,5),)
 	yf_ = yf[100:500]
+	plt.title("fft[:] 411")
 	plt.subplot(411)
 	plt.plot(np.arange(len(yf_)),yf_,'r')
 	yi_ = ifft(yf_)
 	plt.subplot(412)
+	plt.title("fft[:] 412")
 	plt.plot(np.arange(len(yi_)),yi_,'b')
-	
+
+	plt.tight_layout()
 	plt.show()
 	plt.tight_layout()
 	
@@ -131,27 +132,27 @@ def Func2():
 	
 	wf1.writeframes(yyii.tostring())
 	wf1.close()
-
+	
+	'''
+	# 采样点数，修改采样点数和起始位置进行不同位置和长度的音频波形分析
+	N=44100
+	start=0 #开始采样位置
+	df = framerate/(N-1) # 分辨率
+	freq = [df*n for n in range(0,N)] #N个元素
+	print("--framerate:",framerate," nframes:",nframes," df:",df);
+	wave_data2=wave_data[start:start+N]
+	c=np.fft.fft(wave_data2)*2/N
+	#常规显示采样频率一半的频谱
+	d=int(len(c)/2)
+	print("max frequency:",d)
+	#仅显示频率在4000以下的频谱
+	while freq[d]>4000:
+		d-=10
+	plt.plot(freq[:d-1],abs(c[:d-1]),'r')
+	
+	'''
 	plt.show()
-	
-def TestWhere():
-	# ll = list(range(1,10,1))
-	# print(ll)
-	# print("---- ",np.where(ll>5))
-	
-	
-	print(np.where([[True,False],[True,True]],
-			[[1,2],[3,4]],
-			[[9,8],[7,6]])
-	)
-	
-	x = np.arange(16)
-	print("# ",type(x))
-	print(x[np.where(x>-1)])
-	
-	x = np.arange(8).reshape(-1,4)
-	print("--",x)
-	print(np.where(x>5)) #返回两个数组，第一个，满足条件的所在行，第二个，满足条件的所在列
+
 	
 def FromToStr():
 	ali = array.array('i',[1,2,3])
@@ -164,7 +165,6 @@ if __name__ == "__main__":
     Func1()
 	# FromToStr()
 	# Func2()
-	# TestWhere()
 	
 # Wave_read.readframes(n)
 # Reads and returns at most n frames of audio, as a string of bytes.

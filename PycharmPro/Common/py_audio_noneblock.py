@@ -31,8 +31,6 @@ def callback(in_data,frame_count,time_info,status):
 	data = next(dataGen)
 	return (data,pyaudio.paContinue)
 	
-	
-	
 
 if __name__ == '__main__':
 	p = pyaudio.PyAudio()
