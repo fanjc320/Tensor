@@ -7,10 +7,12 @@ import pylab as pl
 wf = wave.open("..\\..\\res\\wow.wav", "rb")
 #创建PyAudio对象
 p = pyaudio.PyAudio()
+'''
 stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),
 channels=wf.getnchannels(),
 rate=wf.getframerate(),
 output=True)
+'''
 nframes = wf.getnframes()
 framerate = wf.getframerate()
 #读取完整的帧数据到str_data中，这是一个string类型的数据
@@ -38,6 +40,7 @@ pl.show()
 #
 # 采样点数，修改采样点数和起始位置进行不同位置和长度的音频波形分析
 N=44100
+# N=78848
 start=0 #开始采样位置
 df = framerate/(N-1) # 分辨率
 freq = [df*n for n in range(0,N)] #N个元素

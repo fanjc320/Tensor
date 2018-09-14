@@ -22,13 +22,13 @@ plt.stem(xf,yf,'r')
 plt.title('FFT of Mixed wave(two sides frequency range)',fontsize=7,color='#7A378B')  #注意这里的颜色可以查询颜色代码表
 
 plt.subplot(223)
-plt.plot(xf,yf,'r')
+plt.stem(xf,yf,'r')
 plt.title('FFT of Mixed wave(two sides frequency range)',fontsize=7,color='#7A378B')  #注意这里的颜色可以查询颜色代码表
 
 _yfi = np.fft.ifft(yf);
 
 plt.subplot(224)
-plt.plot(xf[0:50],_yfi[0:50])
+plt.stem(xf[0:50],_yfi[0:50])
 print("len:",len(xf),len(_yfi));
 
 plt.show()

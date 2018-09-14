@@ -40,7 +40,9 @@ def plotWithN(framerate=100,freq = 10, number=0):
 	plt.plot(a,c1);
 	plt.title("-----周长0.02s频域---");
 
-# @static_vars(counter = 0)
+# @freq 频率 @number 图像个数
+# 此函数用来画不同频率的sin函数及其fft变换
+
 def iplotWithNN(n=100):
 
 	t = np.arange(60)
@@ -59,7 +61,23 @@ def iplotWithNN(n=100):
 
 iplotWithNN(20);
 iplotWithNN();
+	
+# @static_vars(counter = 0)
+def iplotWithNN(f=10,n=100,number=4):
+	# a = np.arange(0.0,1.0,0.02)
 
-plt.tight_layout()
+	t = np.arange(60)
+	n = np.zeros((60,),dtype = complex)
+	print("n:",n);
+	n[40:60] = np.exp(1j*np.random.uniform(0,2*np.pi,(20,))) #元组中只包含一个元素时，需要在元素后面添加逗号
+	print("n[40:60]:",n[40:60]);
+	s=np.fft.ifft(n)
+	plt.plot(t,s.real,'b-',t,s.imag,'r--',t,abs(s),'g')
+
+	plt.legend(('real','imaginary','abs(fft)'))
+
+
+iplotWithNN(10,100,4);
+plt.tight_layout();
 plt.show();
 
