@@ -5,10 +5,10 @@ import seaborn
 
 
 #采样点选择1400个，因为设置的信号频率分量最高为600赫兹，根据采样定理知采样频率要大于信号频率2倍，所以这里设置采样频率为1400赫兹（即一秒内有1400个采样点，一样意思的）
-x=np.linspace(0,1,140)  #linespace 返回array
+x=np.linspace(0,1,14)  #linespace 返回array
 
 #设置需要采样的信号，频率分量有180，390和600
-y=7*np.sin(2*np.pi*10*x) + 3*np.sin(2*np.pi*30*x)+5*np.sin(2*np.pi*60*x)
+y=7*np.sin(2*np.pi*1*x) + 3*np.sin(2*np.pi*3*x)+5*np.sin(2*np.pi*6*x)
 print("sum(y)",sum(abs(y)),sum(y*y))
 
 yy=fft(y)                     #快速傅里叶变换
@@ -27,23 +27,23 @@ xf2 = xf[range(int(len(x)/2))]  #取一半区间
 xf3 = xf[range(int(len(x)))]
 
 plt.subplot(321)
-plt.plot(x,y)
+plt.stem(x,y)
 plt.title('Original wave')
 
 plt.subplot(322)
-plt.plot(xf,yf,'r')
+plt.stem(xf,yf,'r')
 plt.title('FFT of Mixed wave(two sides frequency range)',fontsize=7,color='#7A378B')  #注意这里的颜色可以查询颜色代码表
 
 plt.subplot(323)
-plt.plot(xf1,yf1,'g')
+plt.stem(xf1,yf1,'g')
 plt.title('FFT of Mixed wave(normalization)',fontsize=9,color='r')
 
 plt.subplot(324)
-plt.plot(xf2,yf2,'b')
+plt.stem(xf2,yf2,'b')
 plt.title('FFT of Mixed wave)',fontsize=10,color='#F08080')
 
 plt.subplot(325)
-plt.plot(xf3,yf3,'b')
+plt.stem(xf3,yf3,'b')
 plt.title('FFT of Mixed wave*2)',fontsize=10,color='#F08080')
 
 print(" len(x)",len(x)," len(y) ",len(y),"xf2",xf2);
