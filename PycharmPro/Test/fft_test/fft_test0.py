@@ -4,15 +4,15 @@ import matplotlib.pyplot as plt
 import seaborn
 
 
-def show(ori_func, ft, sampling_period=1):#sampling_period 采样总长度
+def show(ori_func, ft, sampling_period):#sampling_period 采样总长度
     n = len(ori_func) #n 采样帧数,即采样所有时间点的个数
-    interval = sampling_period / n# ----相关a----
+    interval = sampling_period / n ###### a----
     plt.subplot(2, 1, 1)
     plt.plot(np.arange(0, sampling_period, interval), ori_func, 'black')
     plt.xlabel('Time'), plt.ylabel('Amplitude')
 
     plt.subplot(2, 1, 2)
-    frequency = np.arange(n / 2) / (n * interval) #n*interval = samping_period,所以 frequency = np.arange(n/2)
+    frequency = np.arange(n / 2) / (n * interval) #n*interval = sampling_period,所以 frequency = np.arange(n/2)/sampling_period,n/sampling_period=interval ###### a----
     print("show n:",n,"interval:",interval);
     print("frequency:",frequency);
     nfft = abs(ft[range(int(n / 2))] / n) # /2是因为频率的对称性,/n是归一化?
@@ -22,12 +22,14 @@ def show(ori_func, ft, sampling_period=1):#sampling_period 采样总长度
 
 sampling_period = 1;#采样总时间1s
 interval = 0.01
-n = sampling_period/interval # ----相关a----
+n = sampling_period/interval ###### a----
 time = np.arange(0, sampling_period, interval)#采样时间点分部,第二个参数是采样的总周期，第三个参数是采样间隔，采样频率是1/第三个参数，
 x = np.sin(2 * np.pi * 20 * time)
 y = np.fft.fft(x)
 print("x:",x)
 print("y:",y)
+show(x, y,sampling_period)
+sampling_period = 2
 show(x, y,sampling_period)
 
 
