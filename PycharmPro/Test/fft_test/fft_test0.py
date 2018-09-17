@@ -1,25 +1,8 @@
 import numpy as np
 from scipy.fftpack import fft, ifft
 import matplotlib.pyplot as plt
+from common import *
 import seaborn
-
-def show(ori_func, ft, sampling_period):#sampling_period 采样时间总长度
-    n = len(ori_func) #n 采样帧数,即采样所有时间点的个数
-    interval = sampling_period / n ###### a----采样间隔
-    plt.subplot(2, 1, 1)
-    plt.plot(np.arange(0, sampling_period, interval), ori_func, 'black')
-    plt.xlabel('Time'), plt.ylabel('Amplitude')
-
-    plt.subplot(2, 1, 2)
-    #frequency = np.arange(n / 2) / (n * interval) #等价于frequency = np.arange(n/2)/sampling_period,###### a----
-    frequency = np.arange(n) / (n * interval) #等价于frequency = np.arange(n)/sampling_period,###### a----
-    print("show n:",n,"interval:",interval);
-    print("frequency:",frequency);
-    #nfft = abs(ft[range(int(n / 2))] / n) # /2是因为频率的对称性,/n是归一化?
-    nfft = abs(ft[range(int(n))] / n) # /2是因为频率的对称性,/n是归一化?
-    plt.plot(frequency, nfft, 'red')
-    plt.xlabel('Freq(Hz)'), plt.ylabel('Amp. Spectrum')
-    plt.show()
 
 sampling_period = 2;#采样总时间1s
 interval = 0.01#采样间隔0.01s 采样频率 1/interval = 100
