@@ -77,6 +77,13 @@ def show(ori_func,ft,sampling_period = 5,half=True):
 	plt.xlabel('Freq (Hz)'),plt.ylabel('Amp. Spectrum')
 	plt.show()
 
+# def FromToStr():
+# 	ali = array.array('i',[1,2,3])
+# 	str = ali.tostring();
+# 	print("ali",ali," tostring()",str);
+# 	arr = np.fromstring(str,dtype=np.int)
+# 	print("arr",arr)
+
 def TestShow():
 	time = np.arange(0,5,.05) # f=0.005 就是 1s 采样200个,共5s,就是1000个采样点
 	x = np.sin(2*np.pi*1*time)
