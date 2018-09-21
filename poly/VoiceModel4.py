@@ -272,7 +272,7 @@ if __name__ == '__main__':
     #type = 'IIR'
     type = 'FIR'
 
-    voice = 'a'
+    voice = 'i'
     
     main(mode,type,voice)      
     
