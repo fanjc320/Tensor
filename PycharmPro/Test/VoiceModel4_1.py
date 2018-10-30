@@ -111,7 +111,7 @@ def main(param_mode,param_type,param_voice):
     wave_y_base = np.zeros([GlottisTime],dtype='int16')  
     
     #加载y语音
-    path = '../data/std/{}{}.snd'.format(param_voice,GlottisTime)
+    path = './data/std/{}{}.snd'.format(param_voice,GlottisTime)
     LoadWave(path,0,wave_y_base,GlottisTime)          
             
     reset_graph()
