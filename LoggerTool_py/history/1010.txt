@@ -1,0 +1,1 @@
+mysql -ucross_gate -hspider.wx.crossgate.db -P25001 -ptest --default-character-set=utf8 db_crossgate_game_1010 -e'select * from user where uid = 707361036 ' >>wx.txt.log;
