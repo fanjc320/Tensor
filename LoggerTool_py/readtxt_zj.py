@@ -59,8 +59,10 @@ def HandleStringInColums(fin,fout):
     print("共有 %d 行"%(rowsCnt));
     fin.close()
 
-HandleStringInColums('pet_mkid.txt','pet_mkid_out.txt');
-HandleStringInColums('petegg_mkid.txt','petegg_mkid_out.txt');
+# HandleStringInColums('pet_mkid.txt','pet_mkid_out.txt');
+HandleStringInColums('petegg_mkid_InList.txt','petegg_mkid_InList_out.txt');
+HandleStringInColums('pet_mkid_InList.txt','pet_mkid_InList_out.txt');
+# HandleStringInColums('pet_mkid_notInList.txt','pet_mkid_notInList_out.txt');
 # Python 2 默认以字节流（对应 Python 3 的 bytes）的方式读文件，不像 Python 3 默认解码为 unicode。
 # 如果文件内容不是unicode编码的，要先以二进制方式打开，读入比特流，再解码。'rb'  #二进制方式打开
 
