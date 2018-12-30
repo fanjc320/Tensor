@@ -1,15 +1,15 @@
 Log	GameSvrState	dtEventTime	vGameIP	iZoneAreaID
 PlayerRegister	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID	ClientVersion	SystemSoftware	SystemHardware	TelecomOper	Network	ScreenWidth	ScreenHight	Density	RegChannel	CpuHardware	Memory	GLRender	GLVersion	DeviceId	rolecount	colorScheme	roleModel	eleEarth	eleWater	eleFire	eleWind	playerName	ip	clientIp
 PlayerLogin	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID	iLevel	PlayerFriendsNum	ClientVersion	SystemSoftware	SystemHardware	TelecomOper	Network	ScreenWidth	ScreenHight	Density	LoginChannel	CpuHardware	Memory	GLRender	GLVersion	DeviceId	JobType	PlayerJoblv	Score	ctCoin	ctBoundYuanBao	ctYuanBao	ReasonId	isReConnect	platform	knightId	knightName	guildId	guildName	playerName	ip	clientIp
-PlayerLogout	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID	iLevel	jobType	joblv	OnlineTime	PlayerFriendsNum	ClientVersion	SystemSoftware	SystemHardware	TelecomOper	Network	ScreenWidth	ScreenHight	Density	LoginChannel	CpuHardware	Memory	GLRender	GLVersion	DeviceId	ctCoin	ctBoundYuanBao	ctYuanBao	MagicTurns_Change	MagicTurns_Weapon	MagicTurns_Headdress	MagicTurns_Wing	MagicTurns_Surround	MagicTurns_Ride	afterStrong	afterStrength	afterSpeed	afterEndurance	afterMagic	freepoint	ReasonId	knightId	knightName	guildId	guildName	playerName	ip	clientIp
+PlayerLogout	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID	iLevel	jobType	joblv	OnlineTime	PlayerFriendsNum	ClientVersion	SystemSoftware	SystemHardware	TelecomOper	Network	ScreenWidth	ScreenHight	Density	LoginChannel	CpuHardware	Memory	GLRender	GLVersion	DeviceId	ctCoin	ctBoundYuanBao	ctYuanBao	MagicTurns_Change	MagicTurns_Weapon	MagicTurns_Headdress	MagicTurns_Wing	MagicTurns_Surround	MagicTurns_Ride	afterStrong	afterStrength	afterSpeed	afterEndurance	afterMagic	freepoint	ReasonId	knightId	knightName	guildId	guildName	playerName	ip	clientIp	battlePower
 LogOutPartner	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID	iLevel	partnerjson
 LogOutSkill	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID	iLevel	JobType	PlayerJoblv	skilljson
 LogOutCrystal	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID	iLevel	crystaljson
 PlayerOutEquip	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID	iLevel	equipjson	equipjsonz
 MoneyFlow	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID	iLevel	Sequence	AfterMoney	iMoney	Reason	SubReason	AddOrReduce	iMoneyType	BeforeMoney	param1	param2	param3	param4	param5	param6	param7	oldMoneyType	makeIndex
-ItemFlow	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID	iLevel	Sequence	iGoodsType	iGoodsId	iGoodsIdreal	Count	AfterCount	Reason	SubReason	iMoney	iMoneyType	AddOrReduce	ItemQuali	ChangedType	DynProperty	itemName	mapId	prizeId	mkIdx
+ItemFlow	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID	iLevel	Sequence	iGoodsType	iGoodsId	iGoodsIdreal	Count	AfterCount	Reason	SubReason	iMoney	iMoneyType	AddOrReduce	ItemQuali	ChangedType	DynProperty	itemName	mapId	prizeId	mkIdx	flowId
 EquipmentFlow	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID	iLevel	OperId	EquipmentType	EquipmentSubtype	EquipmentLevel	EquipmentColor	param1	equipid	equipidreal	vName	isBound	mapId	mkId
-GemFlow	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID	iLevel	OperId	EquipmentLevel	EquipmentColor	sid	sidreal	vName
+GemFlow	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID	iLevel	OperId	EquipmentLevel	EquipmentColor	sid	sidreal	vName	polishlv
 PlayerExpFlow	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID	iLevel	ExpChange	BeforeLevel	AfterLevel	Time	Reason	SubReason	ExpBefore	ExpAfter	source
 SnsFlow	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	ActorOpenID	RecNum	Count	SNSType	SNSSubType	vopenid	vRoleID	iLevel
 RoundFlow	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID	iLevel	iStartTime	BattleID	BattleType	RoundScore	RoundTime	Result	RoundNo	iTeamid	BattleGroupid	UnitCount	Reason	Sname	wanfaId	TaskId	taskStepID	iTaskType	TaskName	hasRobotPlr	WaveNo	TotalWave	CombineBattleId	newBattleId
@@ -25,7 +25,7 @@ ShopLog	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID	iLev
 BagExpand	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID	iLevel	PlayerJob	PlayerJoblv	BagIndex	ExpandCount	BagCapacity	ReasonId
 Pet	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID	iLevel	vpetname	PetId	PetIdreal	makeindex	PetLv	ChangedExp	ChangedType	ReasonId	growth	skill_tal_id	skill_tal_name	skill_tal_lv	tal_exp	tal_maxlv	tal_toldtalentid	tal_transCount	tal_slot	tal_cfgMaxlv
 PetLogout	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID	iLevel	vpetname	PetId	PetIdreal	makeindex	PetLevel	iCardtype	iCardlv	iScore	iMagicTurnsState	iskillCount	skilljson	ReasonId	state	growValue	afterStrong	afterStrength	afterSpeed	afterEndurance	afterMagic	freepoint	isMandang	pettalentjson
-Partner	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID	iLevel	PartnerId	ChangedType	PartnerLv	PartnerExp	JobLv	ReasonId	sid	vName
+Partner	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID	iLevel	PartnerId	ChangedType	PartnerLv	PartnerExp	JobLv	ReasonId	sid	vName	quality
 SkillLog	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID	iLevel	petId	petrealId	SkillId	Exp	ChangedType	TrainingTimes	ReasonId
 ElementSkill	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID	iLevel	SkillId	ChangedType	crystal	crystal_consumed	ReasonId
 BasePoints	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID	iLevel	ChangedType	ReasonId	PetId	PetMakeindex	Strong	Strength	Speed	Endurance	Magic	afterStrong	afterStrength	afterSpeed	afterEndurance	afterMagic	freepoint
@@ -53,3 +53,5 @@ LogoutRepute	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID
 LogOutTujian	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID	iLevel	tujian	tujiantaocnt	tujiancnt
 LogOutAchieveTitle	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID	iLevel	achieve
 GuajiDaka	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID	iLevel	leftcount	ReasonId
+WorldLv	GameSvrId	dtEventTime	status	curWorldLv
+PlayerFriendsList	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID	iLevel	vRoleName	iJobId	iHeadId	vFriendsList

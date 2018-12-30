@@ -221,9 +221,9 @@ def main(param_mode,param_type,param_voice):
                 mse = loss.eval(feed_dict=feed)
                 print(iteration, "\tMSE:", mse)
             
-                #print('k',k)
-                #print('a',wa)
-                #print('b',wb)            
+                # print('k',k)
+                # print('a',wa)
+                # print('b',wb)
             
             
             if iteration % 100 == 0:
