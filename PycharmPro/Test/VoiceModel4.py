@@ -14,6 +14,8 @@ import matplotlib.pyplot as plt
 from scipy import signal
 import os
 
+System.loadLibrary("mkl_intel_thread");
+
 def LoadWave(filepath,offset,buf,buflen):
     f = open(filepath, 'rb')  
     ndx = 0
