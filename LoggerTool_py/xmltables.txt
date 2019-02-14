@@ -21,7 +21,7 @@ TaskFlow	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID	iLe
 GuildFlow	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID	iLevel	iVipLevel	iActType	iGuildID	iGuildLevel	iMemberNum
 GuildRedBag	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID	iLevel	iREDBAG	iGuildID
 GuildBoss	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID	iLevel	iGIULDBOSS	iGuildID	iBattleid	iLvneed	ilv
-ShopLog	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID	iLevel	ShopType	ItemType	ItemId	ItemIdr	GoodsType	ItemCount	MoneyType	MoneyCount	ShopAction	ReasonId	DynaProperty	MakeIndex	name	type	quality	itemlv	OldMoneyType
+ShopLog	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID	iLevel	ShopType	ItemType	ItemId	ItemIdr	GoodsType	ItemCount	MoneyType	MoneyCount	ShopAction	ReasonId	DynaProperty	MakeIndex	name	type	quality	itemlv	OldMoneyType	timeIndex
 BagExpand	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID	iLevel	PlayerJob	PlayerJoblv	BagIndex	ExpandCount	BagCapacity	ReasonId
 Pet	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID	iLevel	vpetname	PetId	PetIdreal	makeindex	PetLv	ChangedExp	ChangedType	ReasonId	growth	skill_tal_id	skill_tal_name	skill_tal_lv	tal_exp	tal_maxlv	tal_toldtalentid	tal_transCount	tal_slot	tal_cfgMaxlv
 PetLogout	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID	iLevel	vpetname	PetId	PetIdreal	makeindex	PetLevel	iCardtype	iCardlv	iScore	iMagicTurnsState	iskillCount	skilljson	ReasonId	state	growValue	afterStrong	afterStrength	afterSpeed	afterEndurance	afterMagic	freepoint	isMandang	pettalentjson
@@ -54,4 +54,9 @@ LogOutTujian	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID
 LogOutAchieveTitle	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID	iLevel	achieve
 GuajiDaka	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID	iLevel	leftcount	ReasonId
 WorldLv	GameSvrId	dtEventTime	status	curWorldLv
-PlayerFriendsList	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID	iLevel	vRoleName	iJobId	iHeadId	vFriendsList
+LogOutEnhancedSkill	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID	iLevel	JobType	PlayerJoblv	skilljson
+PetLogoutEnhanceSkill	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID	iLevel	vpetname	PetId	PetIdreal	makeindex	PetLevel	enhanceSkilljson
+DelPartner	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID	iLevel	partnerName	partnerid	partnerlv	partnerjson
+DelItem	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID	iLevel	ItemName	itemid	mkid	itemjson
+DelPet	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID	iLevel	petname	petid	petlv	mkid	petjson
+PartnerOutEquip	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID	iLevel	partnerId	partnerName	equipjson	equipjsonz

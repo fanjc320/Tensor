@@ -1,4 +1,5 @@
 XmlPath = "C:/backend/binExe/configs/tlog_fields.xml"
+# XmlPath = "G:/Temp/tlog_fields.xml"
 # LogPath = "C:/backend/binExe/server/GameWorld/log/game.log"
 LogPath = "F:/Online/shouxufei/game.log.4.match_word.20180816154922"
 OutLogPath = "F:/Online/shouxufei/out.log"

@@ -19,7 +19,8 @@ def main():
     print("imgs",imgs)
     for img in imgs:
         try:
-            img=img.replace('\\',")
+            print("img:"+img)
+            #img=img.replace('\\',")
             pic =img+'.jpg'
             path='d:\\bs4\\zhihu\\jpg\\'+str(i)+'.jpg'
 

@@ -4,12 +4,12 @@ import matplotlib.pyplot as plt
 from common import *
 import seaborn
 
-sampling_period = 2;#采样总时间1s
-interval = 0.01#采样间隔0.01s 采样频率 1/interval = 100
+sampling_period = 20;#采样总时间1s
+interval = 0.001#采样间隔0.01s 采样频率 1/interval = 100
 n = sampling_period/interval #帧数 ###### a----
 
 time = np.arange(0, sampling_period, interval)#采样时间点分部,第二个参数是采样的总周期，第三个参数是采样间隔，采样频率是1/第三个参数，
-x = np.sin(2 * np.pi * 20 * time)
+x = 100*np.sin(2 * np.pi * 20 * time)
 y = np.fft.fft(x)
 print("x:",x)
 print("y:",y)
@@ -30,3 +30,5 @@ def func1():
     plt.title('FFT of Mixed wave(two sides frequency range)', fontsize=7, color='#7A378B')  # 注意这里的颜色可以查询颜色代码表
     plt.tight_layout()
     plt.show()
+
+func1()
