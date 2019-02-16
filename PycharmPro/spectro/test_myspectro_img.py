@@ -77,11 +77,29 @@ print(np.shape(time))
 # img=data.astronaut()
 # print(np.shape(img))
 # plt.imshow(img[:512][:512][:3])
-
-X = [[1,2],[3,4],[5,6]]
+fig = plt.figure()
+X = [[1,2],[3,4],[5,6],[7,8]]
+#fig.add_subplot(221)
 # plt.imshow(X,cmap = plt.cm.gray)
-plt.imshow(X,cmap = plt.cm.summer)
-plt.colorbar()
+#plt.imshow(X,cmap = plt.cm.summer)
+#plt.colorbar()
+
+fig.add_subplot(231)
+map = plt.imshow(X, interpolation='nearest', cmap=plt.cm.summer, aspect='auto',vmin=1, vmax=15)
+cb = plt.colorbar(mappable=map, cax=None, ax=None, shrink=0.5)
+fig.add_subplot(232)
+map = plt.imshow(X, interpolation='nearest', cmap=plt.cm.summer, aspect='auto',vmin=3, vmax=5)
+cb = plt.colorbar(mappable=map, cax=None, ax=None, shrink=0.5)
+fig.add_subplot(233)
+map = plt.imshow(X, interpolation='nearest', cmap=plt.cm.summer, aspect='auto', vmin=1, vmax=2)
+cb = plt.colorbar(mappable=map, cax=None, ax=None, shrink=0.5)
+fig.add_subplot(234)
+map = plt.imshow(X, interpolation='nearest', cmap=plt.cm.summer, aspect='auto', vmin=2, vmax=3)
+cb = plt.colorbar(mappable=map, cax=None, ax=None, shrink=0.5)
+fig.add_subplot(235)
+map = plt.imshow(X, interpolation='nearest', cmap=plt.cm.summer, aspect='auto', vmin=3, vmax=4)
+cb = plt.colorbar(mappable=map, cax=None, ax=None, shrink=0.5)
+plt.show()
 
 # ---------------------------------
 # img0 =[]
@@ -102,7 +120,9 @@ print("img shape:",np.shape(img))
 print("img shape:",np.shape(img0))
 # plt.imshow(img0*50,origin='lower')
 
-plt.show()
+
+
+
 
 # ---------------------------------
 
@@ -125,16 +145,18 @@ def draw_heatmap(data, xlabels, ylabels):
                 vmax = j
             if j < vmin:
                 vmin = j
-    map = ax.imshow(data, interpolation='nearest', cmap=cmap, aspect='auto', vmin=vmin, vmax=vmax)
+    #map = ax.imshow(data, interpolation='nearest', cmap=cmap, aspect='auto', vmin=vmin, vmax=vmax)
     cb = plt.colorbar(mappable=map, cax=None, ax=None, shrink=0.5)
-    plt.show()
+    #plt.show()
 
 
 a = np.random.rand(10, 10)
 print(a)
 xlabels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J']
 ylabels = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']
-draw_heatmap(a, xlabels, ylabels)
+# draw_heatmap(a, xlabels, ylabels)
+
+
 
 
 

@@ -1,4 +1,9 @@
-import numpy, wave,math
+import numpy as np, wave,math
+import matplotlib.cbook as cbook
+from matplotlib import docstring
+from matplotlib.path import Path
+import matplotlib.pyplot as plt 
+import math
 # filename 是文件名
 # window_length_ms 是以毫秒为单位的窗长
 # window_shift_times 是帧移，是与窗长的比例 例如窗长20ms，帧移0.5就是10毫秒
@@ -44,9 +49,38 @@ def getSpectrum(filename, window_length_ms, window_shift_times):
 
 import numpy, matplotlib.pyplot as plt
 # 窗长20ms， 窗移时窗长的0.5倍
-speech_spectrum = getSpectrum('./yusheng_ni.wav', 20, 0.5)
-print(numpy.shape(speech_spectrum))
-plt.imshow(speech_spectrum)
+#speech_spectrum = getSpectrum('./yusheng_ni.wav', 20, 0.5)
+#print(numpy.shape(speech_spectrum))
+#plt.imshow(speech_spectrum)
 
+x = [0, 20, 25, 31.5, 40, 50, 63, 80, 100, 125,
+ 160, 200, 250, 315, 400, 500, 630, 800, 1000, 1250, 
+ 1600, 2000, 2500, 3150, 4000, 5000, 6300, 8000, 10000, 12500, 
+ 16000, 20000];
+y = [140, 109.51, 104.23, 99.08, 94.18, 89.96, 85.94, 82.05, 78.65, 75.56, 
+72.47, 69.86, 67.53, 65.39, 63.45, 62.05, 60.81, 59.89, 60.01, 62.15, 
+63.19, 59.96, 57.26, 56.42, 57.57, 60.89, 66.36, 71.66, 73.16, 68.63,
+ 68.43, 104.92];
+
+x0 = numpy.arange(32)
+#plt.plot(x0,x,'go-')
+plt.plot(x0,y,'*')
+plt.xlabel("time")
+plt.ylabel("amplitude")
+plt.title("Original wave")
 
 plt.show()
+
+# a = np.arange(10)
+
+# NFFT = 35
+# if 1:
+    # print("x:",x)
+    # n = len(x)
+    # x = np.resize(x, (NFFT,2))
+    # y = np.resize(x, (NFFT,))
+    # x[n:] = 0
+    # print("x",x)
+    # print("y",y)
+
+ 

@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 import wave
+import test_myspectro_source
  
 #读入音频。
 path = "./"
@@ -59,9 +60,12 @@ NFFT = framesize #NFFT必须与时域的点数framsize相等，即不补零的FF
 overlapSize = 1.0/3 * framesize #重叠部分采样点数overlapSize约为每帧点数的1/3~1/2
 overlapSize = int(round(overlapSize))#取整
 print("帧长为{},帧叠为{},傅里叶变换点数为{}".format(framesize,overlapSize,NFFT))
-spectrum,freqs,ts,fig = plt.specgram(waveData[0],NFFT = NFFT,Fs =framerate,window=np.hanning(M = framesize),noverlap=overlapSize,mode='default',scale_by_freq=True,sides='default',scale='dB',xextent=None)#绘制频谱图
+#spectrum,freqs,ts,fig = plt.specgram(waveData[0],NFFT = NFFT,Fs =framerate,window=np.hanning(M = framesize),noverlap=overlapSize,mode='default',scale_by_freq=True,sides='default',scale='dB',xextent=None)#绘制频谱图
+spectrum,freqs,ts,fig = test_myspectro_source.specgram(waveData[0],NFFT = NFFT,Fs =framerate,window=np.hanning(M = framesize),noverlap=overlapSize,mode='default',scale_by_freq=True,sides='default',scale='dB')#绘制频谱图
+
           
 plt.ylabel('Frequency')
 plt.xlabel('Time')
 plt.title("Spectrogram")
 plt.show()
+ 
