@@ -4,476 +4,7 @@ from matplotlib import docstring
 from matplotlib.path import Path
 import matplotlib.pyplot as plt 
 import math
-# filename 是文件名
-# window_length_ms 是以毫秒为单位的窗长
-# window_shift_times 是帧移，是与窗长的比例 例如窗长20ms，帧移0.5就是10毫秒
-def getSpectrum(filename, window_length_ms, window_shift_times):
-    # 读音频文件
-    wav_file = wave.open(filename, 'r')
-    # 获取音频文件的各种参数
-    params = wav_file.getparams()
-    nchannels, sampwidth, framerate, wav_length = params[:4]
-    # 获取音频文件内的数据，不知道为啥获取到的竟然是个字符串，还需要在numpy中转换成short类型的数据
-    str_data = wav_file.readframes(wav_length)
-    wave_data = numpy.fromstring(str_data, dtype=numpy.short)
-    # 将窗长从毫秒转换为点数
-    window_length = framerate * window_length_ms / 1000
-    window_shift = int(window_length * window_shift_times)
-    # 计算总帧数，并创建一个空矩阵
-    nframe = (wav_length - (window_length - window_shift)) / window_shift
-    nframe = math.floor(nframe)
-    window_length = math.floor(window_length)
-    a = math.floor(window_length/2)
-    # spec = numpy.zeros((window_length/2, nframe))
-    spec = numpy.zeros((a, nframe))
-
-    print("max wavedata:",max(wave_data))
-    maxlog = 0;
-    # 循环计算每一个窗内的fft值
-    for i in range(nframe):
-        start = i * window_shift
-        end = start + window_length
-        # [:window_length/2]是指只留下前一半的fft分量
-        # spec[:, i] = numpy.log(numpy.abs(numpy.fft.fft(wave_data[start:end])))[:window_length/2]
-        r_fft = numpy.abs(numpy.fft.fft(wave_data[start:end]))
-        spec[:, i] = 10*numpy.log10(r_fft)[:window_length // 2]
-        maxlog = max(maxlog,max(spec[:,i]))
-
-    for i in range(20000):
-        print(10*numpy.log10(i))
-    print("maxlog:",maxlog)
-    print("spec shape:",numpy.shape(spec))
-    return spec
-
-
-
-import numpy, matplotlib.pyplot as plt
-# 窗长20ms， 窗移时窗长的0.5倍
-#speech_spectrum = getSpectrum('./yusheng_ni.wav', 20, 0.5)
-#print(numpy.shape(speech_spectrum))
-#plt.imshow(speech_spectrum)
-
-x = [0, 20, 25, 31.5, 40, 50, 63, 80, 100, 125,
- 160, 200, 250, 315, 400, 500, 630, 800, 1000, 1250, 
- 1600, 2000, 2500, 3150, 4000, 5000, 6300, 8000, 10000, 12500, 
- 16000, 20000];
-y = [140, 109.51, 104.23, 99.08, 94.18, 89.96, 85.94, 82.05, 78.65, 75.56, 
-72.47, 69.86, 67.53, 65.39, 63.45, 62.05, 60.81, 59.89, 60.01, 62.15, 
-63.19, 59.96, 57.26, 56.42, 57.57, 60.89, 66.36, 71.66, 73.16, 68.63,
- 68.43, 104.92];
-
-
-# axes
-def _spectral_helper(x, y=None, NFFT=None, Fs=None, detrend_func=None,
-                     window=None, noverlap=None, pad_to=None,
-                     sides=None, scale_by_freq=None, mode=None):
-    '''
-    This is a helper function that implements the commonality between the
-    psd, csd, spectrogram and complex, magnitude, angle, and phase spectrums.
-    It is *NOT* meant to be used outside of mlab and may change at any time.
-    '''
-    if y is None:
-        # if y is None use x for y
-        same_data = True
-    else:
-        # The checks for if y is x are so that we can use the same function to
-        # implement the core of psd(), csd(), and spectrogram() without doing
-        # extra calculations.  We return the unaveraged Pxy, freqs, and t.
-        same_data = y is x
-
-    if Fs is None:
-        Fs = 2
-    if noverlap is None:
-        noverlap = 0
-    # if detrend_func is None:
-        # detrend_func = detrend_none
-    if window is None:
-        window = window_hanning
-
-    # if NFFT is set to None use the whole signal
-    if NFFT is None:
-        NFFT = 256
-
-    if mode is None or mode == 'default':
-        mode = 'psd'
-    elif mode not in ['psd', 'complex', 'magnitude', 'angle', 'phase']:
-        raise ValueError("Unknown value for mode %s, must be one of: "
-                         "'default', 'psd', 'complex', "
-                         "'magnitude', 'angle', 'phase'" % mode)
-
-    if not same_data and mode != 'psd':
-        raise ValueError("x and y must be equal if mode is not 'psd'")
-
-    # Make sure we're dealing with a numpy array. If y and x were the same
-    # object to start with, keep them that way
-    x = np.asarray(x)
-    if not same_data:
-        y = np.asarray(y)
-
-    if sides is None or sides == 'default':
-        if np.iscomplexobj(x):
-            sides = 'twosided'
-        else:
-            sides = 'onesided'
-    elif sides not in ['onesided', 'twosided']:
-        raise ValueError("Unknown value for sides %s, must be one of: "
-                         "'default', 'onesided', or 'twosided'" % sides)
-
-    # zero pad x and y up to NFFT if they are shorter than NFFT
-    if len(x) < NFFT:
-        n = len(x)
-        x = np.resize(x, (NFFT,))
-        x[n:] = 0
-
-    if not same_data and len(y) < NFFT:
-        n = len(y)
-        y = np.resize(y, (NFFT,))
-        y[n:] = 0
-
-    if pad_to is None:
-        pad_to = NFFT
-
-    if mode != 'psd':
-        scale_by_freq = False
-    elif scale_by_freq is None:
-        scale_by_freq = True
-
-    # For real x, ignore the negative frequencies unless told otherwise
-    if sides == 'twosided':
-        numFreqs = pad_to
-        if pad_to % 2:
-            freqcenter = (pad_to - 1)//2 + 1
-        else:
-            freqcenter = pad_to//2
-        scaling_factor = 1.
-    elif sides == 'onesided':
-        if pad_to % 2:
-            numFreqs = (pad_to + 1)//2
-        else:
-            numFreqs = pad_to//2 + 1
-        scaling_factor = 2.
-
-    result = stride_windows(x, NFFT, noverlap, axis=0)
-    # result = detrend(result, detrend_func, axis=0)
-    result, windowVals = apply_window(result, window, axis=0,
-                                      return_window=True)
-    result = np.fft.fft(result, n=pad_to, axis=0)[:numFreqs, :]
-    freqs = np.fft.fftfreq(pad_to, 1/Fs)[:numFreqs]
-
-    if not same_data:
-        # if same_data is False, mode must be 'psd'
-        resultY = stride_windows(y, NFFT, noverlap)
-        resultY = detrend(resultY, detrend_func, axis=0)
-        resultY = apply_window(resultY, window, axis=0)
-        resultY = np.fft.fft(resultY, n=pad_to, axis=0)[:numFreqs, :]
-        result = np.conj(result) * resultY
-    elif mode == 'psd':
-        result = np.conj(result) * result
-    elif mode == 'magnitude':
-        result = np.abs(result) / np.abs(windowVals).sum()
-    elif mode == 'angle' or mode == 'phase':
-        # we unwrap the phase later to handle the onesided vs. twosided case
-        result = np.angle(result)
-    elif mode == 'complex':
-        result /= np.abs(windowVals).sum()
-
-    if mode == 'psd':
-
-        # Also include scaling factors for one-sided densities and dividing by
-        # the sampling frequency, if desired. Scale everything, except the DC
-        # component and the NFFT/2 component:
-
-        # if we have a even number of frequencies, don't scale NFFT/2
-        if not NFFT % 2:
-            slc = slice(1, -1, None)
-        # if we have an odd number, just don't scale DC
-        else:
-            slc = slice(1, None, None)
-
-        result[slc] *= scaling_factor
-
-        # MATLAB divides by the sampling frequency so that density function
-        # has units of dB/Hz and can be integrated by the plotted frequency
-        # values. Perform the same scaling here.
-        if scale_by_freq:
-            result /= Fs
-            # Scale the spectrum by the norm of the window to compensate for
-            # windowing loss; see Bendat & Piersol Sec 11.5.2.
-            result /= (np.abs(windowVals)**2).sum()
-        else:
-            # In this case, preserve power in the segment, not amplitude
-            result /= np.abs(windowVals).sum()**2
-
-    t = np.arange(NFFT/2, len(x) - NFFT/2 + 1, NFFT - noverlap)/Fs
-
-    if sides == 'twosided':
-        # center the frequency range at zero
-        freqs = np.concatenate((freqs[freqcenter:], freqs[:freqcenter]))
-        result = np.concatenate((result[freqcenter:, :],
-                                 result[:freqcenter, :]), 0)
-    elif not pad_to % 2:
-        # get the last value correctly, it is negative otherwise
-        freqs[-1] *= -1
-
-    # we unwrap the phase here to handle the onesided vs. twosided case
-    if mode == 'phase':
-        result = np.unwrap(result, axis=0)
-
-    return result, freqs, t
-
-#@_preprocess_data(replace_names=["x"], label_namer=None)
-#@docstring.dedent_interpd
-def specgram(x, NFFT=None, Fs=None, Fc=None, detrend=None,
-             window=None, noverlap=None,
-             cmap=None, xextent=None, pad_to=None, sides=None,
-             scale_by_freq=None, mode=None, scale=None,
-             vmin=None, vmax=None, **kwargs):
-    """
-    Plot a spectrogram.
-
-    Call signature::
-
-      specgram(x, NFFT=256, Fs=2, Fc=0, detrend=mlab.detrend_none,
-               window=mlab.window_hanning, noverlap=128,
-               cmap=None, xextent=None, pad_to=None, sides='default',
-               scale_by_freq=None, mode='default', scale='default',
-               **kwargs)
-
-    Compute and plot a spectrogram of data in *x*.  Data are split into
-    *NFFT* length segments and the spectrum of each section is
-    computed.  The windowing function *window* is applied to each
-    segment, and the amount of overlap of each segment is
-    specified with *noverlap*. The spectrogram is plotted as a colormap
-    (using imshow).
-
-    Parameters
-    ----------
-    x : 1-D array or sequence
-        Array or sequence containing the data.
-
-    %(Spectral)s
-
-    %(PSD)s
-
-    mode : [ 'default' | 'psd' | 'magnitude' | 'angle' | 'phase' ]
-        What sort of spectrum to use.  Default is 'psd', which takes
-        the power spectral density.  'complex' returns the complex-valued
-        frequency spectrum.  'magnitude' returns the magnitude spectrum.
-        'angle' returns the phase spectrum without unwrapping.  'phase'
-        returns the phase spectrum with unwrapping.
-
-    noverlap : integer
-        The number of points of overlap between blocks.  The
-        default value is 128.
-
-    scale : [ 'default' | 'linear' | 'dB' ]
-        The scaling of the values in the *spec*.  'linear' is no scaling.
-        'dB' returns the values in dB scale.  When *mode* is 'psd',
-        this is dB power (10 * log10).  Otherwise this is dB amplitude
-        (20 * log10). 'default' is 'dB' if *mode* is 'psd' or
-        'magnitude' and 'linear' otherwise.  This must be 'linear'
-        if *mode* is 'angle' or 'phase'.
-
-    Fc : integer
-        The center frequency of *x* (defaults to 0), which offsets
-        the x extents of the plot to reflect the frequency range used
-        when a signal is acquired and then filtered and downsampled to
-        baseband.
-
-    cmap :
-        A :class:`matplotlib.colors.Colormap` instance; if *None*, use
-        default determined by rc
-
-    xextent : [None | (xmin, xmax)]
-        The image extent along the x-axis. The default sets *xmin* to the
-        left border of the first bin (*spectrum* column) and *xmax* to the
-        right border of the last bin. Note that for *noverlap>0* the width
-        of the bins is smaller than those of the segments.
-
-    **kwargs :
-        Additional kwargs are passed on to imshow which makes the
-        specgram image
-
-    Returns
-    -------
-    spectrum : 2-D array
-        Columns are the periodograms of successive segments.
-
-    freqs : 1-D array
-        The frequencies corresponding to the rows in *spectrum*.
-
-    t : 1-D array
-        The times corresponding to midpoints of segments (i.e., the columns
-        in *spectrum*).
-
-    im : instance of class :class:`~matplotlib.image.AxesImage`
-        The image created by imshow containing the spectrogram
-
-    See Also
-    --------
-    :func:`psd`
-        :func:`psd` differs in the default overlap; in returning the mean
-        of the segment periodograms; in not returning times; and in
-        generating a line plot instead of colormap.
-
-    :func:`magnitude_spectrum`
-        A single spectrum, similar to having a single segment when *mode*
-        is 'magnitude'. Plots a line instead of a colormap.
-
-    :func:`angle_spectrum`
-        A single spectrum, similar to having a single segment when *mode*
-        is 'angle'. Plots a line instead of a colormap.
-
-    :func:`phase_spectrum`
-        A single spectrum, similar to having a single segment when *mode*
-        is 'phase'. Plots a line instead of a colormap.
-
-    Notes
-    -----
-    The parameters *detrend* and *scale_by_freq* do only apply when *mode*
-    is set to 'psd'.
-    """
- 
-
-    if NFFT is None:
-        NFFT = 256  # same default as in mlab.specgram()
-    if Fc is None:
-        Fc = 0  # same default as in mlab._spectral_helper()
-    if noverlap is None:
-        noverlap = 128  # same default as in mlab.specgram()
-
-    if mode == 'complex':
-        raise ValueError('Cannot plot a complex specgram')
-
-    if scale is None or scale == 'default':
-        if mode in ['angle', 'phase']:
-            scale = 'linear'
-        else:
-            scale = 'dB'
-    elif mode in ['angle', 'phase'] and scale == 'dB':
-        raise ValueError('Cannot use dB scale with angle or phase mode')
-
-    spec, freqs, t = specgram1(x=x, NFFT=NFFT, Fs=Fs,
-                                   detrend=detrend, window=window,
-                                   noverlap=noverlap, pad_to=pad_to,
-                                   sides=sides,
-                                   scale_by_freq=scale_by_freq,
-                                   mode=mode)
-
-    if scale == 'linear':
-        Z = spec
-    elif scale == 'dB':
-        if mode is None or mode == 'default' or mode == 'psd':
-            Z = 10. * np.log10(spec)
-        else:
-            Z = 20. * np.log10(spec)
-    else:
-        raise ValueError('Unknown scale %s', scale)
-
-    Z = np.flipud(Z)
-
-    if xextent is None:
-        # padding is needed for first and last segment:
-        pad_xextent = (NFFT-noverlap) / Fs / 2
-        xextent = np.min(t) - pad_xextent, np.max(t) + pad_xextent
-    xmin, xmax = xextent
-    freqs += Fc
-    extent = xmin, xmax, freqs[0], freqs[-1]
-    im = plt.imshow(Z, cmap, extent=extent, vmin=vmin, vmax=vmax,
-                     **kwargs)
-    # self.axis('auto')
-
-    return spec, freqs, t, im
-        
-        
-#@docstring.dedent_interpd  #mlab
-def specgram1(x, NFFT=None, Fs=None, detrend=None, window=None,
-             noverlap=None, pad_to=None, sides=None, scale_by_freq=None,
-             mode=None):
-    """
-    Compute a spectrogram.
-
-    Compute and plot a spectrogram of data in x.  Data are split into
-    NFFT length segments and the spectrum of each section is
-    computed.  The windowing function window is applied to each
-    segment, and the amount of overlap of each segment is
-    specified with noverlap.
-
-    Parameters
-    ----------
-    x : array_like
-        1-D array or sequence.
-
-    %(Spectral)s
-
-    %(PSD)s
-
-    noverlap : int, optional
-        The number of points of overlap between blocks.  The default
-        value is 128.
-    mode : str, optional
-        What sort of spectrum to use, default is 'psd'.
-            'psd'
-                Returns the power spectral density.
-
-            'complex'
-                Returns the complex-valued frequency spectrum.
-
-            'magnitude'
-                Returns the magnitude spectrum.
-
-            'angle'
-                Returns the phase spectrum without unwrapping.
-
-            'phase'
-                Returns the phase spectrum with unwrapping.
-
-    Returns
-    -------
-    spectrum : array_like
-        2-D array, columns are the periodograms of successive segments.
-
-    freqs : array_like
-        1-D array, frequencies corresponding to the rows in *spectrum*.
-
-    t : array_like
-        1-D array, the times corresponding to midpoints of segments
-        (i.e the columns in *spectrum*).
-
-    See Also
-    --------
-    psd : differs in the overlap and in the return values.
-    complex_spectrum : similar, but with complex valued frequencies.
-    magnitude_spectrum : similar single segment when mode is 'magnitude'.
-    angle_spectrum : similar to single segment when mode is 'angle'.
-    phase_spectrum : similar to single segment when mode is 'phase'.
-
-    Notes
-    -----
-    detrend and scale_by_freq only apply when *mode* is set to 'psd'.
-
-    """
-    if noverlap is None:
-        noverlap = 128  # default in _spectral_helper() is noverlap = 0
-    if NFFT is None:
-        NFFT = 256  # same default as in _spectral_helper()
-    if len(x) <= NFFT:
-        warnings.warn("Only one segment is calculated since parameter NFFT " +
-                      "(=%d) >= signal length (=%d)." % (NFFT, len(x)))
-
-    spec, freqs, t = _spectral_helper(x=x, y=None, NFFT=NFFT, Fs=Fs,
-                                      detrend_func=detrend, window=window,
-                                      noverlap=noverlap, pad_to=pad_to,
-                                      sides=sides,
-                                      scale_by_freq=scale_by_freq,
-                                      mode=mode)
-
-    if mode != 'complex':
-        spec = spec.real  # Needed since helper implements generically
-
-    return spec, freqs, t
-
-    
+  
 def stride_windows(x, n, noverlap=None, axis=0):
     '''
     Get all windows of x with length n as a single array,
@@ -651,21 +182,468 @@ def apply_window(x, window, axis=0, return_window=None):
     else:
         return windowValsRep * x
 
-    
-def rolling_window(a, window):
-    shape = a.shape[:-1] + (a.shape[-1] - window + 1, window)
-    # shape:(4,3)  a.shape:(6,)   a.shape[:-1]:()   a.shape[-1]:6
-    print("shape",shape,a.shape,a.shape[:-1],a.shape[-1])
-    strides = a.strides + (a.strides[-1],)
-    print("strides:",a.strides,strides)
-    return np.lib.stride_tricks.as_strided(a, shape=shape, strides=strides)
 
+# pyplot.py
+# Autogenerated by boilerplate.py.  Do not edit as changes will be lost.
+# @_autogen_docstring(Axes.specgram)
+def specgram(x, NFFT=None, Fs=None, Fc=None, detrend=None, window=None,
+             noverlap=None, cmap=None, xextent=None, pad_to=None, sides=None,
+             scale_by_freq=None, mode=None, scale=None, vmin=None, vmax=None,
+             hold=None, data=None, **kwargs):
+    # Deprecated: allow callers to override the hold state
+    # by passing hold=True|False
+    print("======specgram begin======")
+    try:
+        ret = specgram_ax(x, NFFT=NFFT, Fs=Fs, Fc=Fc, detrend=detrend,
+                          window=window, noverlap=noverlap, cmap=cmap,
+                          xextent=xextent, pad_to=pad_to, sides=sides,
+                          scale_by_freq=scale_by_freq, mode=mode, scale=scale,
+                          vmin=vmin, vmax=vmax, data=data, **kwargs)
+    finally:
+        print("specgram finish fjc")
+    # sci(ret[-1])
+    print("======specgram======")
+    return ret
     
-a = np.array([1, 12, 3, 4, 5, 6]); 
-b = rolling_window(a, 3)
-print("rolling_window:",b)
-c = np.lib.stride_tricks.as_strided(a, shape=(4,3), strides=(4,4))
-print("strides:",c)
+
+# _axes.py
+#@_preprocess_data(replace_names=["x"], label_namer=None)
+#@docstring.dedent_interpd
+def specgram_ax( x, NFFT=None, Fs=None, Fc=None, detrend=None,
+             window=None, noverlap=None,
+             cmap=None, xextent=None, pad_to=None, sides=None,
+             scale_by_freq=None, mode=None, scale=None,
+             vmin=None, vmax=None, **kwargs):
+    """
+    Plot a spectrogram.
+
+    Call signature::
+
+      specgram(x, NFFT=256, Fs=2, Fc=0, detrend=mlab.detrend_none,
+               window=mlab.window_hanning, noverlap=128,
+               cmap=None, xextent=None, pad_to=None, sides='default',
+               scale_by_freq=None, mode='default', scale='default',
+               **kwargs)
+
+    Compute and plot a spectrogram of data in *x*.  Data are split into
+    *NFFT* length segments and the spectrum of each section is
+    computed.  The windowing function *window* is applied to each
+    segment, and the amount of overlap of each segment is
+    specified with *noverlap*. The spectrogram is plotted as a colormap
+    (using imshow).
+
+    Parameters
+    ----------
+    x : 1-D array or sequence
+        Array or sequence containing the data.
+
+    %(Spectral)s
+
+    %(PSD)s
+
+    mode : [ 'default' | 'psd' | 'magnitude' | 'angle' | 'phase' ]
+        What sort of spectrum to use.  Default is 'psd', which takes
+        the power spectral density.  'complex' returns the complex-valued
+        frequency spectrum.  'magnitude' returns the magnitude spectrum.
+        'angle' returns the phase spectrum without unwrapping.  'phase'
+        returns the phase spectrum with unwrapping.
+
+    noverlap : integer
+        The number of points of overlap between blocks.  The
+        default value is 128.
+
+    scale : [ 'default' | 'linear' | 'dB' ]
+        The scaling of the values in the *spec*.  'linear' is no scaling.
+        'dB' returns the values in dB scale.  When *mode* is 'psd',
+        this is dB power (10 * log10).  Otherwise this is dB amplitude
+        (20 * log10). 'default' is 'dB' if *mode* is 'psd' or
+        'magnitude' and 'linear' otherwise.  This must be 'linear'
+        if *mode* is 'angle' or 'phase'.
+
+    Fc : integer
+        The center frequency of *x* (defaults to 0), which offsets
+        the x extents of the plot to reflect the frequency range used
+        when a signal is acquired and then filtered and downsampled to
+        baseband.
+
+    cmap :
+        A :class:`matplotlib.colors.Colormap` instance; if *None*, use
+        default determined by rc
+
+    xextent : [None | (xmin, xmax)]
+        The image extent along the x-axis. The default sets *xmin* to the
+        left border of the first bin (*spectrum* column) and *xmax* to the
+        right border of the last bin. Note that for *noverlap>0* the width
+        of the bins is smaller than those of the segments.
+
+    **kwargs :
+        Additional kwargs are passed on to imshow which makes the
+        specgram image
+
+    Returns
+    -------
+    spectrum : 2-D array
+        Columns are the periodograms of successive segments.
+
+    freqs : 1-D array
+        The frequencies corresponding to the rows in *spectrum*.
+
+    t : 1-D array
+        The times corresponding to midpoints of segments (i.e., the columns
+        in *spectrum*).
+
+    im : instance of class :class:`~matplotlib.image.AxesImage`
+        The image created by imshow containing the spectrogram
+
+    See Also
+    --------
+    :func:`psd`
+        :func:`psd` differs in the default overlap; in returning the mean
+        of the segment periodograms; in not returning times; and in
+        generating a line plot instead of colormap.
+
+    :func:`magnitude_spectrum`
+        A single spectrum, similar to having a single segment when *mode*
+        is 'magnitude'. Plots a line instead of a colormap.
+
+    :func:`angle_spectrum`
+        A single spectrum, similar to having a single segment when *mode*
+        is 'angle'. Plots a line instead of a colormap.
+
+    :func:`phase_spectrum`
+        A single spectrum, similar to having a single segment when *mode*
+        is 'phase'. Plots a line instead of a colormap.
+
+    Notes
+    -----
+    The parameters *detrend* and *scale_by_freq* do only apply when *mode*
+    is set to 'psd'.
+    """
+
+    if NFFT is None:
+        NFFT = 256  # same default as in mlab.specgram()
+    if Fc is None:
+        Fc = 0  # same default as in mlab._spectral_helper()
+    if noverlap is None:
+        noverlap = 128  # same default as in mlab.specgram()
+
+    if mode == 'complex':
+        raise ValueError('Cannot plot a complex specgram')
+
+    if scale is None or scale == 'default':
+        if mode in ['angle', 'phase']:
+            scale = 'linear'
+        else:
+            scale = 'dB'
+    elif mode in ['angle', 'phase'] and scale == 'dB':
+        raise ValueError('Cannot use dB scale with angle or phase mode')
+
+    spec, freqs, t = specgram_mlab(x=x, NFFT=NFFT, Fs=Fs,
+                                   detrend=detrend, window=window,
+                                   noverlap=noverlap, pad_to=pad_to,
+                                   sides=sides,
+                                   scale_by_freq=scale_by_freq,
+                                   mode=mode)
+
+    if scale == 'linear':
+        Z = spec
+    elif scale == 'dB':
+        if mode is None or mode == 'default' or mode == 'psd':
+            Z = 10. * np.log10(spec)
+        else:
+            Z = 20. * np.log10(spec)
+    else:
+        raise ValueError('Unknown scale %s', scale)
+    
+    Z = Z[0:100]
+    Z = np.flipud(Z)
+
+    if xextent is None:
+        # padding is needed for first and last segment:
+        pad_xextent = (NFFT-noverlap) / Fs / 2
+        xextent = np.min(t) - pad_xextent, np.max(t) + pad_xextent
+    xmin, xmax = xextent
+    freqs += Fc
+    extent = xmin, xmax, freqs[0], freqs[-1]
+    # im = self.imshow(Z, cmap, extent=extent, vmin=vmin, vmax=vmax,
+                     # **kwargs)
+    # im = plt.imshow(Z, cmap, extent=extent, vmin=vmin, vmax=vmax,
+                     # **kwargs)
+    test = np.array([[float("-inf"),2],[3,4]])
+    #im = plt.imshow(test,cmap)
+
+    im = plt.imshow(Z, cmap)
+    plt.yticks(np.arange(1,100,10))
+    print("test:",test.shape)
+    print("Z:",np.array(Z).shape)
+    # self.axis('auto')
+    print("======specgram_ax Z:",Z)
+    return spec, freqs, t, im
+
+# mlab.py
+#@docstring.dedent_interpd
+def specgram_mlab(x, NFFT=None, Fs=None, detrend=None, window=None,
+             noverlap=None, pad_to=None, sides=None, scale_by_freq=None,
+             mode=None):
+    """
+    Compute a spectrogram.
+
+    Compute and plot a spectrogram of data in x.  Data are split into
+    NFFT length segments and the spectrum of each section is
+    computed.  The windowing function window is applied to each
+    segment, and the amount of overlap of each segment is
+    specified with noverlap.
+
+    Parameters
+    ----------
+    x : array_like
+        1-D array or sequence.
+
+    %(Spectral)s
+
+    %(PSD)s
+
+    noverlap : int, optional
+        The number of points of overlap between blocks.  The default
+        value is 128.
+    mode : str, optional
+        What sort of spectrum to use, default is 'psd'.
+            'psd'
+                Returns the power spectral density.
+
+            'complex'
+                Returns the complex-valued frequency spectrum.
+
+            'magnitude'
+                Returns the magnitude spectrum.
+
+            'angle'
+                Returns the phase spectrum without unwrapping.
+
+            'phase'
+                Returns the phase spectrum with unwrapping.
+
+    Returns
+    -------
+    spectrum : array_like
+        2-D array, columns are the periodograms of successive segments.
+
+    freqs : array_like
+        1-D array, frequencies corresponding to the rows in *spectrum*.
+
+    t : array_like
+        1-D array, the times corresponding to midpoints of segments
+        (i.e the columns in *spectrum*).
+
+    See Also
+    --------
+    psd : differs in the overlap and in the return values.
+    complex_spectrum : similar, but with complex valued frequencies.
+    magnitude_spectrum : similar single segment when mode is 'magnitude'.
+    angle_spectrum : similar to single segment when mode is 'angle'.
+    phase_spectrum : similar to single segment when mode is 'phase'.
+
+    Notes
+    -----
+    detrend and scale_by_freq only apply when *mode* is set to 'psd'.
+
+    """
+    if noverlap is None:
+        noverlap = 128  # default in _spectral_helper() is noverlap = 0
+    if NFFT is None:
+        NFFT = 256  # same default as in _spectral_helper()
+    if len(x) <= NFFT:
+        warnings.warn("Only one segment is calculated since parameter NFFT " +
+                      "(=%d) >= signal length (=%d)." % (NFFT, len(x)))
+
+    spec, freqs, t = _spectral_helper(x=x, y=None, NFFT=NFFT, Fs=Fs,
+                                      detrend_func=detrend, window=window,
+                                      noverlap=noverlap, pad_to=pad_to,
+                                      sides=sides,
+                                      scale_by_freq=scale_by_freq,
+                                      mode=mode)
+
+    if mode != 'complex':
+        spec = spec.real  # Needed since helper implements generically
+
+    return spec, freqs, t
+
+
+_coh_error = """Coherence is calculated by averaging over *NFFT*
+length segments.  Your signal is too short for your choice of *NFFT*.
+"""
+    
+#mlab.py
+def _spectral_helper(x, y=None, NFFT=None, Fs=None, detrend_func=None,
+                     window=None, noverlap=None, pad_to=None,
+                     sides=None, scale_by_freq=None, mode=None):
+    '''
+    This is a helper function that implements the commonality between the
+    psd, csd, spectrogram and complex, magnitude, angle, and phase spectrums.
+    It is *NOT* meant to be used outside of mlab and may change at any time.
+    '''
+    if y is None:
+        # if y is None use x for y
+        same_data = True
+    else:
+        # The checks for if y is x are so that we can use the same function to
+        # implement the core of psd(), csd(), and spectrogram() without doing
+        # extra calculations.  We return the unaveraged Pxy, freqs, and t.
+        same_data = y is x
+
+    if Fs is None:
+        Fs = 2
+    if noverlap is None:
+        noverlap = 0
+    # if detrend_func is None:
+        # detrend_func = detrend_none
+    if window is None:
+        window = window_hanning
+
+    # if NFFT is set to None use the whole signal
+    if NFFT is None:
+        NFFT = 256
+
+    if mode is None or mode == 'default':
+        mode = 'psd'
+    elif mode not in ['psd', 'complex', 'magnitude', 'angle', 'phase']:
+        raise ValueError("Unknown value for mode %s, must be one of: "
+                         "'default', 'psd', 'complex', "
+                         "'magnitude', 'angle', 'phase'" % mode)
+
+    if not same_data and mode != 'psd':
+        raise ValueError("x and y must be equal if mode is not 'psd'")
+
+    # Make sure we're dealing with a numpy array. If y and x were the same
+    # object to start with, keep them that way
+    x = np.asarray(x)
+    if not same_data:
+        y = np.asarray(y)
+
+    if sides is None or sides == 'default':
+        if np.iscomplexobj(x):
+            sides = 'twosided'
+        else:
+            sides = 'onesided'
+    elif sides not in ['onesided', 'twosided']:
+        raise ValueError("Unknown value for sides %s, must be one of: "
+                         "'default', 'onesided', or 'twosided'" % sides)
+
+    # zero pad x and y up to NFFT if they are shorter than NFFT
+    if len(x) < NFFT:
+        n = len(x)
+        x = np.resize(x, (NFFT,))
+        x[n:] = 0
+
+    if not same_data and len(y) < NFFT:
+        n = len(y)
+        y = np.resize(y, (NFFT,))
+        y[n:] = 0
+
+    if pad_to is None:
+        pad_to = NFFT
+
+    if mode != 'psd':
+        scale_by_freq = False
+    elif scale_by_freq is None:
+        scale_by_freq = True
+
+    # For real x, ignore the negative frequencies unless told otherwise
+    if sides == 'twosided':
+        numFreqs = pad_to
+        if pad_to % 2:
+            freqcenter = (pad_to - 1)//2 + 1
+        else:
+            freqcenter = pad_to//2
+        scaling_factor = 1.
+    elif sides == 'onesided':
+        if pad_to % 2:
+            numFreqs = (pad_to + 1)//2
+        else:
+            numFreqs = pad_to//2 + 1
+        scaling_factor = 2.
+
+    result = stride_windows(x, NFFT, noverlap, axis=0)
+    # result = detrend(result, detrend_func, axis=0)
+    result, windowVals = apply_window(result, window, axis=0,
+                                      return_window=True)
+    result = np.fft.fft(result, n=pad_to, axis=0)[:numFreqs, :]
+    freqs = np.fft.fftfreq(pad_to, 1/Fs)[:numFreqs]
+
+    if not same_data:
+        # if same_data is False, mode must be 'psd'
+        resultY = stride_windows(y, NFFT, noverlap)
+        resultY = detrend(resultY, detrend_func, axis=0)
+        resultY = apply_window(resultY, window, axis=0)
+        resultY = np.fft.fft(resultY, n=pad_to, axis=0)[:numFreqs, :]
+        result = np.conj(result) * resultY
+    elif mode == 'psd':
+        result = np.conj(result) * result
+    elif mode == 'magnitude':
+        result = np.abs(result) / np.abs(windowVals).sum()
+    elif mode == 'angle' or mode == 'phase':
+        # we unwrap the phase later to handle the onesided vs. twosided case
+        result = np.angle(result)
+    elif mode == 'complex':
+        result /= np.abs(windowVals).sum()
+
+    if mode == 'psd':
+
+        # Also include scaling factors for one-sided densities and dividing by
+        # the sampling frequency, if desired. Scale everything, except the DC
+        # component and the NFFT/2 component:
+
+        # if we have a even number of frequencies, don't scale NFFT/2
+        if not NFFT % 2:
+            slc = slice(1, -1, None)
+        # if we have an odd number, just don't scale DC
+        else:
+            slc = slice(1, None, None)
+
+        result[slc] *= scaling_factor
+
+        # MATLAB divides by the sampling frequency so that density function
+        # has units of dB/Hz and can be integrated by the plotted frequency
+        # values. Perform the same scaling here.
+        if scale_by_freq:
+            result /= Fs
+            # Scale the spectrum by the norm of the window to compensate for
+            # windowing loss; see Bendat & Piersol Sec 11.5.2.
+            result /= (np.abs(windowVals)**2).sum()
+        else:
+            # In this case, preserve power in the segment, not amplitude
+            result /= np.abs(windowVals).sum()**2
+
+    t = np.arange(NFFT/2, len(x) - NFFT/2 + 1, NFFT - noverlap)/Fs
+
+    if sides == 'twosided':
+        # center the frequency range at zero
+        freqs = np.concatenate((freqs[freqcenter:], freqs[:freqcenter]))
+        result = np.concatenate((result[freqcenter:, :],
+                                 result[:freqcenter, :]), 0)
+    elif not pad_to % 2:
+        # get the last value correctly, it is negative otherwise
+        freqs[-1] *= -1
+
+    # we unwrap the phase here to handle the onesided vs. twosided case
+    if mode == 'phase':
+        result = np.unwrap(result, axis=0)
+    print("_spectral_helper freqs:",freqs)
+    return result, freqs, t
+    
+# def rolling_window(a, window):
+    # shape = a.shape[:-1] + (a.shape[-1] - window + 1, window)
+    ##shape:(4,3)  a.shape:(6,)   a.shape[:-1]:()   a.shape[-1]:6
+    # print("shape",shape,a.shape,a.shape[:-1],a.shape[-1])
+    # strides = a.strides + (a.strides[-1],)
+    # print("strides:",a.strides,strides)
+    # return np.lib.stride_tricks.as_strided(a, shape=shape, strides=strides)
+    
+# a = np.array([1, 12, 3, 4, 5, 6]); 
+# b = rolling_window(a, 3)
+# print("rolling_window:",b)
+# c = np.lib.stride_tricks.as_strided(a, shape=(4,3), strides=(4,4))
+# print("strides:",c)
 
  
     

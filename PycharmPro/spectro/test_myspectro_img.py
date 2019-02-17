@@ -78,7 +78,8 @@ print(np.shape(time))
 # print(np.shape(img))
 # plt.imshow(img[:512][:512][:3])
 fig = plt.figure()
-X = [[1,2],[3,4],[5,6],[7,8]]
+#X = [[1,2],[3,4],[5,6],[7,8]]
+X = [[-1,-2],[-3,-4],[-15,6],[-7,8]]
 #fig.add_subplot(221)
 # plt.imshow(X,cmap = plt.cm.gray)
 #plt.imshow(X,cmap = plt.cm.summer)

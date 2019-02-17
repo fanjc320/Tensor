@@ -40,7 +40,7 @@ def wavreads(path):
 	return datause,time 
 
 #wav文件读取
-def fjc_record(OutFile = "./fjc.wav",Seconds = 5):
+def fjc_record(OutFile = "../../res/fjc.wav",Seconds = 5):
 	#参数定义
 	CHUNK = 1024
 	FORMAT = pyaudio.paInt16
@@ -73,7 +73,7 @@ def fjc_record(OutFile = "./fjc.wav",Seconds = 5):
 	wf.writeframes(b''.join(frames))
 	wf.close()
 	
-def fjc_record_with(frames,OutFile = "./fjc.wav",Seconds = 5):
+def fjc_record_with(frames,OutFile = "..\res\fjc.wav",Seconds = 5):
 	CHUNK = 1024
 	FORMAT = pyaudio.paInt16
 	CHANNELS = 2
@@ -96,4 +96,4 @@ def fjc_record_with(frames,OutFile = "./fjc.wav",Seconds = 5):
 	wf.writeframes(b''.join(frames))
 	wf.close()
 	
-# fjc_record(Seconds=15)
+#fjc_record(Seconds=15)

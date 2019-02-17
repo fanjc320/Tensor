@@ -2,11 +2,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 import wave
-import test_myspectro_source
+import pyaudio
+import test_myspectro_source_test
  
 #读入音频。
 path = "./"
-name = 'yusheng.wav'
+name = 'yusheng1.wav'
 #我音频的路径为E:\SpeechWarehouse\zmkm\zmkm0.wav
 filename = os.path.join(path, name)
  
@@ -15,6 +16,7 @@ f = wave.open(filename,'rb')
 # 得到语音参数
 params = f.getparams()
 nchannels, sampwidth, framerate,nframes = params[:4]
+print("channels:",nchannels,"sampwidth:",sampwidth,"framerate:",framerate,"nframes:",nframes)
 #---------------------------------------------------------------#
 # 将字符串格式的数据转成int型
 print("reading wav file......")
@@ -31,11 +33,11 @@ print("file is closed!")
 print("plotting signal wave...")
 time = np.arange(0,nframes) * (1.0 / framerate)#计算时间
 time= np.reshape(time,[nframes,1]).T
-plt.plot(time[0,:nframes],waveData[0,:nframes],c="b")
+#plt.plot(time[0,:nframes],waveData[0,:nframes],c="b")
 plt.xlabel("time")
 plt.ylabel("amplitude")
 plt.title("Original wave")
-plt.show()
+#plt.show()
  
 #--------------------------------------------------------------#
 '''
@@ -57,15 +59,17 @@ sortlist = sorted(nfftdict.items(), key=lambda x: x[1])#按与当前framesize差
 framesize = int(sortlist[0][0])#取最接近当前framesize的那个2的正整数次方值为新的framesize
  
 NFFT = framesize #NFFT必须与时域的点数framsize相等，即不补零的FFT
-overlapSize = 1.0/3 * framesize #重叠部分采样点数overlapSize约为每帧点数的1/3~1/2
+print("nfft:",NFFT)
+overlapSize = 1.0/3 * framesize #重叠部分采样点数overlapize约为每帧点数的1/3~1/2
 overlapSize = int(round(overlapSize))#取整
 print("帧长为{},帧叠为{},傅里叶变换点数为{}".format(framesize,overlapSize,NFFT))
 #spectrum,freqs,ts,fig = plt.specgram(waveData[0],NFFT = NFFT,Fs =framerate,window=np.hanning(M = framesize),noverlap=overlapSize,mode='default',scale_by_freq=True,sides='default',scale='dB',xextent=None)#绘制频谱图
-spectrum,freqs,ts,fig = test_myspectro_source.specgram(waveData[0],NFFT = NFFT,Fs =framerate,window=np.hanning(M = framesize),noverlap=overlapSize,mode='default',scale_by_freq=True,sides='default',scale='dB')#绘制频谱图
+spectrum,freqs,ts,fig = test_myspectro_source_test.specgram(waveData[0],NFFT = NFFT,Fs =framerate,window=np.hanning(M = framesize),
+    noverlap=overlapSize,mode='default',scale_by_freq=True,sides='default',scale='dB')#绘制频谱图
 
           
 plt.ylabel('Frequency')
 plt.xlabel('Time')
 plt.title("Spectrogram")
 plt.show()
- 
+
