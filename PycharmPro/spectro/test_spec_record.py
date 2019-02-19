@@ -64,7 +64,7 @@ for i in lists:
     nfftdict[i] = abs(framesize - i)
 sortlist = sorted(nfftdict.items(), key=lambda x: x[1])#按与当前framesize差值升序排列
 framesize = int(sortlist[0][0])#取最接近当前framesize的那个2的正整数次方值为新的framesize
- 
+
 NFFT = framesize #NFFT必须与时域的点数framsize相等，即不补零的FFT
 print("nfft:",NFFT)
 overlapSize = 1.0/3 * framesize #重叠部分采样点数overlapize约为每帧点数的1/3~1/2

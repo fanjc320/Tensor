@@ -5,7 +5,7 @@ from matplotlib.path import Path
 import matplotlib.pyplot as plt
 from skimage import data, filters
 import test_img_sharp
-
+# import test_img_sharp1
 
 def mapTo(n, start1, stop1, start2, stop2):
     return ((n - start1) / (stop1 - start1)) * (stop2 - start2) + start2
@@ -383,7 +383,7 @@ def specgram_ax(x, NFFT=None, Fs=None, Fc=None, detrend=None,
     else:
         raise ValueError('Unknown scale %s', scale)
     # print("scale:",scale)
-    Z = Z[0:150]  # 舍弃部分高频部分
+    Z = Z[0:100]
     # print("z:",Z)
 
     minz = np.min(Z)
@@ -418,7 +418,7 @@ def specgram_ax(x, NFFT=None, Fs=None, Fc=None, detrend=None,
 
     print("Z:", np.array(Z).shape)
     # self.axis('auto')
-    return spec, freqs, t, im
+    return spec, freqs, t, im,Z
 
 
 # mlab.py
