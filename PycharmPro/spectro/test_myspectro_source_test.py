@@ -3,8 +3,31 @@ import matplotlib.cbook as cbook
 from matplotlib import docstring
 from matplotlib.path import Path
 import matplotlib.pyplot as plt 
-import math
-  
+from skimage import data,filters
+import test_img_sharp
+
+def mapTo(n, start1, stop1, start2, stop2):
+  return ((n-start1)/(stop1-start1))*(stop2-start2)+start2
+
+# def mapTo_Arr(arr,stop1,stop2):
+#     minv = np.min(arr)
+#     maxv = np.max(arr)
+#     for item in arr:
+#         res = mapTo(item,minv,maxv,stop1,stop2)
+
+# 归一化
+def maxminnorm(array):
+    maxcols=array.max(axis=0)
+    mincols=array.min(axis=0)
+    data_shape = array.shape
+    data_rows = data_shape[0]
+    data_cols = data_shape[1]
+    t=np.empty((data_rows,data_cols))
+    for i in range(data_cols):
+        t[:,i]=(array[:,i]-mincols[i])/(maxcols[i]-mincols[i])
+    return t
+
+
 def stride_windows(x, n, noverlap=None, axis=0):
     '''
     Get all windows of x with length n as a single array,
@@ -359,13 +382,25 @@ def specgram_ax( x, NFFT=None, Fs=None, Fc=None, detrend=None,
     #print("scale:",scale)
     # Z = Z[0:100]
     Z = Z[0:150]
-    print("z:",Z)
-    #Z[abs(Z)<50]=0
-    #Z = np.array(Z)*10
-    print("-z:",Z)
+    #print("z:",Z)
+
+    minz = np.min(Z)
+    maxz = np.max(Z)
+    # gap = maxz-minz
+    # threashold = (minz-maxz)*0.8 # 阈值，超过显示空白
+    Z = np.array(Z)
+
+    print("minz:",minz,"maxz:",maxz)
+    #print("-z:", Z)
+    Z = maxminnorm(Z)
+    Z = Z * 100
+    minz = np.min(Z)
+    maxz = np.max(Z)
+    print("after minz:", minz, "maxz:", maxz)
     plt.yticks(np.arange(1,1000,100))
     Z = np.flipud(Z)
-    
+    # Z = filters.sobel(Z)
+    Z = test_img_sharp.TestSharp(Z,test_img_sharp.sobel_1)
 
     if xextent is None:
         # padding is needed for first and last segment:
@@ -381,8 +416,8 @@ def specgram_ax( x, NFFT=None, Fs=None, Fc=None, detrend=None,
     test = np.array([[float("-inf"),2],[3,4]])
     #im = plt.imshow(test,cmap)
 
-    im = plt.imshow(Z, cmap='magma')
-    
+    im = plt.imshow(Z, cmap='Greys',vmin = 0,vmax=100)
+
     print("test:",test.shape)
     print("Z:",np.array(Z).shape)
     # self.axis('auto')
@@ -638,7 +673,7 @@ def _spectral_helper(x, y=None, NFFT=None, Fs=None, detrend_func=None,
         result = np.unwrap(result, axis=0)
     print("_spectral_helper freqs:",freqs)
     return result, freqs, t
-    
+
 # def rolling_window(a, window):
     # shape = a.shape[:-1] + (a.shape[-1] - window + 1, window)
     ##shape:(4,3)  a.shape:(6,)   a.shape[:-1]:()   a.shape[-1]:6
