@@ -4,6 +4,7 @@ from matplotlib import docstring
 from matplotlib.path import Path
 import matplotlib.pyplot as plt 
 import math
+import test_myspectro_source_test
 # filename 是文件名
 # window_length_ms 是以毫秒为单位的窗长
 # window_shift_times 是帧移，是与窗长的比例 例如窗长20ms，帧移0.5就是10毫秒
@@ -80,36 +81,43 @@ y = [140, 109.51, 104.23, 99.08, 94.18, 89.96, 85.94, 82.05, 78.65, 75.56,
 
 # 数组切片
 lst = [
-    [1,2,3,0,5,6], 
-    [3,2,3,0,5,6], 
-    [4,2,3,4,5,6], 
-    [2,2,3,3,5,6], 
-    [3,2,3,2,5,6], 
-    [5,2,3,7,5,6], 
-    [7,8,9,10,11,12],
-    [71,81,91,101,111,121],
-    [49,20,3,4,59,69],
-    [40,20,30,40,50,69],
-    [40,2,3,4,115,69]
+    [-10,-20,-30,-40,-50,-60]
+    # [20,30,40,50,60,70],
+    # [30,40,50,60,70,80]
     ]
 
-lst = lst[4:-1]
+# lst = lst[1:-1]
 arr = np.asarray(lst)
 
-#lst = lst*10
 
-print("lst:",lst)
-#plt.plot(lst)
-plt.imshow(lst)
+fig = plt.figure()
+ax = fig.add_subplot(311)
+plt.imshow(arr,cmap = 'Greys',vmin=-200,vmax=0)
+
+fig.add_subplot(312)
+arr = arr*5
+plt.imshow(arr,cmap= 'Greys')
+
+
+
+
+fig.add_subplot(313)
+arr0 = [[1,2,3,4,5,6]]
+newarr = np.r_[arr0,arr]
+print("newarr",newarr)
+plt.imshow(newarr,cmap= 'Greys')
+
 plt.show()
 
-print(arr[0:2, 0:4])
-print(arr[0:2])
-print("arr:",arr)
-b = arr[arr>40]=0
-print("arr>40:",arr)
+# print(arr[0:2, 0:4])
+# print(arr[0:2])
+# print("arr:",arr)
+# b = arr[arr>40]=0
+# print("arr>40:",arr)
 
-a = np.array([1,2,3,4])
-print(a*3)
 
-    
+# lst 没shape,array有shape,
+
+b = np.array([(1,2,3),(2,4,6),(0.5,3,5)],dtype=float)
+c = test_myspectro_source_test.maxminnorm(b)
+print(c)

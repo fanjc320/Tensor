@@ -1,13 +1,15 @@
-import numpy as np, wave,math
+import numpy as np, wave, math
 import matplotlib.cbook as cbook
-from matplotlib import docstring
+import matplotlib.cm as cm
 from matplotlib.path import Path
-import matplotlib.pyplot as plt 
-from skimage import data,filters
+import matplotlib.pyplot as plt
+from skimage import data, filters
 import test_img_sharp
 
+
 def mapTo(n, start1, stop1, start2, stop2):
-  return ((n-start1)/(stop1-start1))*(stop2-start2)+start2
+    return ((n - start1) / (stop1 - start1)) * (stop2 - start2) + start2
+
 
 # def mapTo_Arr(arr,stop1,stop2):
 #     minv = np.min(arr)
@@ -17,14 +19,14 @@ def mapTo(n, start1, stop1, start2, stop2):
 
 # 归一化
 def maxminnorm(array):
-    maxcols=array.max(axis=0)
-    mincols=array.min(axis=0)
+    maxcols = array.max(axis=0)
+    mincols = array.min(axis=0)
     data_shape = array.shape
     data_rows = data_shape[0]
     data_cols = data_shape[1]
-    t=np.empty((data_rows,data_cols))
+    t = np.empty((data_rows, data_cols))
     for i in range(data_cols):
-        t[:,i]=(array[:,i]-mincols[i])/(maxcols[i]-mincols[i])
+        t[:, i] = (array[:, i] - mincols[i]) / (maxcols[i] - mincols[i])
     return t
 
 
@@ -88,11 +90,11 @@ def stride_windows(x, n, noverlap=None, axis=0):
 
     step = n - noverlap
     if axis == 0:
-        shape = (n, (x.shape[-1]-noverlap)//step)
-        strides = (x.strides[0], step*x.strides[0])
+        shape = (n, (x.shape[-1] - noverlap) // step)
+        strides = (x.strides[0], step * x.strides[0])
     else:
-        shape = ((x.shape[-1]-noverlap)//step, n)
-        strides = (step*x.strides[0], x.strides[0])
+        shape = ((x.shape[-1] - noverlap) // step, n)
+        strides = (step * x.strides[0], x.strides[0])
     return np.lib.stride_tricks.as_strided(x, shape=shape, strides=strides)
 
 
@@ -149,7 +151,8 @@ def stride_repeat(x, n, axis=0):
         strides = (x.strides[0], 0)
 
     return np.lib.stride_tricks.as_strided(x, shape=shape, strides=strides)
-    
+
+
 def apply_window(x, window, axis=0, return_window=None):
     '''
     Apply the given window to the given 1D or 2D array along the given axis.
@@ -174,7 +177,7 @@ def apply_window(x, window, axis=0, return_window=None):
 
     if x.ndim < 1 or x.ndim > 2:
         raise ValueError('only 1D or 2D arrays can be used')
-    if axis+1 > x.ndim:
+    if axis + 1 > x.ndim:
         raise ValueError('axis(=%s) out of bounds' % axis)
 
     xshape = list(x.shape)
@@ -196,7 +199,7 @@ def apply_window(x, window, axis=0, return_window=None):
 
     xshapeother = xshape.pop()
 
-    otheraxis = (axis+1) % 2
+    otheraxis = (axis + 1) % 2
 
     windowValsRep = stride_repeat(windowVals, xshapeother, axis=otheraxis)
 
@@ -227,16 +230,16 @@ def specgram(x, NFFT=None, Fs=None, Fc=None, detrend=None, window=None,
     # sci(ret[-1])
     print("======specgram======")
     return ret
-    
+
 
 # _axes.py
-#@_preprocess_data(replace_names=["x"], label_namer=None)
-#@docstring.dedent_interpd
-def specgram_ax( x, NFFT=None, Fs=None, Fc=None, detrend=None,
-             window=None, noverlap=None,
-             cmap=None, xextent=None, pad_to=None, sides=None,
-             scale_by_freq=None, mode=None, scale=None,
-             vmin=None, vmax=None, **kwargs):
+# @_preprocess_data(replace_names=["x"], label_namer=None)
+# @docstring.dedent_interpd
+def specgram_ax(x, NFFT=None, Fs=None, Fc=None, detrend=None,
+                window=None, noverlap=None,
+                cmap=None, xextent=None, pad_to=None, sides=None,
+                scale_by_freq=None, mode=None, scale=None,
+                vmin=None, vmax=None, **kwargs):
     """
     Plot a spectrogram.
 
@@ -379,10 +382,9 @@ def specgram_ax( x, NFFT=None, Fs=None, Fc=None, detrend=None,
             print("--------------")
     else:
         raise ValueError('Unknown scale %s', scale)
-    #print("scale:",scale)
-    # Z = Z[0:100]
-    Z = Z[0:150]
-    #print("z:",Z)
+    # print("scale:",scale)
+    Z = Z[0:150]  # 舍弃部分高频部分
+    # print("z:",Z)
 
     minz = np.min(Z)
     maxz = np.max(Z)
@@ -390,44 +392,40 @@ def specgram_ax( x, NFFT=None, Fs=None, Fc=None, detrend=None,
     # threashold = (minz-maxz)*0.8 # 阈值，超过显示空白
     Z = np.array(Z)
 
-    print("minz:",minz,"maxz:",maxz)
-    #print("-z:", Z)
+    print("minz:", minz, "maxz:", maxz)
+    # print("-z:", Z)
     Z = maxminnorm(Z)
     Z = Z * 100
     minz = np.min(Z)
     maxz = np.max(Z)
     print("after minz:", minz, "maxz:", maxz)
-    plt.yticks(np.arange(1,1000,100))
+    plt.yticks(np.arange(1, 1000, 100))
     Z = np.flipud(Z)
     # Z = filters.sobel(Z)
-    Z = test_img_sharp.TestSharp(Z,test_img_sharp.sobel_1)
+    # Z = test_img_sharp.TestSharp(Z,test_img_sharp.sobel_1)
+    # Z = test_img_sharp.Testimconv_jiangzao(Z)
 
     if xextent is None:
         # padding is needed for first and last segment:
-        pad_xextent = (NFFT-noverlap) / Fs / 2
+        pad_xextent = (NFFT - noverlap) / Fs / 2
         xextent = np.min(t) - pad_xextent, np.max(t) + pad_xextent
     xmin, xmax = xextent
     freqs += Fc
     extent = xmin, xmax, freqs[0], freqs[-1]
     # im = self.imshow(Z, cmap, extent=extent, vmin=vmin, vmax=vmax,
-                     # **kwargs)
-    # im = plt.imshow(Z, cmap, extent=extent, vmin=vmin, vmax=vmax,
-                     # **kwargs)
-    test = np.array([[float("-inf"),2],[3,4]])
-    #im = plt.imshow(test,cmap)
+    #                 **kwargs)
+    im = plt.imshow(Z, cmap='Greys', vmin=0, vmax=100)
 
-    im = plt.imshow(Z, cmap='Greys',vmin = 0,vmax=100)
-
-    print("test:",test.shape)
-    print("Z:",np.array(Z).shape)
+    print("Z:", np.array(Z).shape)
     # self.axis('auto')
     return spec, freqs, t, im
 
+
 # mlab.py
-#@docstring.dedent_interpd
+# @docstring.dedent_interpd
 def specgram_mlab(x, NFFT=None, Fs=None, detrend=None, window=None,
-             noverlap=None, pad_to=None, sides=None, scale_by_freq=None,
-             mode=None):
+                  noverlap=None, pad_to=None, sides=None, scale_by_freq=None,
+                  mode=None):
     """
     Compute a spectrogram.
 
@@ -515,8 +513,9 @@ def specgram_mlab(x, NFFT=None, Fs=None, detrend=None, window=None,
 _coh_error = """Coherence is calculated by averaging over *NFFT*
 length segments.  Your signal is too short for your choice of *NFFT*.
 """
-    
-#mlab.py
+
+
+# mlab.py
 def _spectral_helper(x, y=None, NFFT=None, Fs=None, detrend_func=None,
                      window=None, noverlap=None, pad_to=None,
                      sides=None, scale_by_freq=None, mode=None):
@@ -539,7 +538,7 @@ def _spectral_helper(x, y=None, NFFT=None, Fs=None, detrend_func=None,
     if noverlap is None:
         noverlap = 0
     # if detrend_func is None:
-        # detrend_func = detrend_none
+    # detrend_func = detrend_none
     if window is None:
         window = window_hanning
 
@@ -595,15 +594,15 @@ def _spectral_helper(x, y=None, NFFT=None, Fs=None, detrend_func=None,
     if sides == 'twosided':
         numFreqs = pad_to
         if pad_to % 2:
-            freqcenter = (pad_to - 1)//2 + 1
+            freqcenter = (pad_to - 1) // 2 + 1
         else:
-            freqcenter = pad_to//2
+            freqcenter = pad_to // 2
         scaling_factor = 1.
     elif sides == 'onesided':
         if pad_to % 2:
-            numFreqs = (pad_to + 1)//2
+            numFreqs = (pad_to + 1) // 2
         else:
-            numFreqs = pad_to//2 + 1
+            numFreqs = pad_to // 2 + 1
         scaling_factor = 2.
 
     result = stride_windows(x, NFFT, noverlap, axis=0)
@@ -611,7 +610,7 @@ def _spectral_helper(x, y=None, NFFT=None, Fs=None, detrend_func=None,
     result, windowVals = apply_window(result, window, axis=0,
                                       return_window=True)
     result = np.fft.fft(result, n=pad_to, axis=0)[:numFreqs, :]
-    freqs = np.fft.fftfreq(pad_to, 1/Fs)[:numFreqs]
+    freqs = np.fft.fftfreq(pad_to, 1 / Fs)[:numFreqs]
 
     if not same_data:
         # if same_data is False, mode must be 'psd'
@@ -652,12 +651,12 @@ def _spectral_helper(x, y=None, NFFT=None, Fs=None, detrend_func=None,
             result /= Fs
             # Scale the spectrum by the norm of the window to compensate for
             # windowing loss; see Bendat & Piersol Sec 11.5.2.
-            result /= (np.abs(windowVals)**2).sum()
+            result /= (np.abs(windowVals) ** 2).sum()
         else:
             # In this case, preserve power in the segment, not amplitude
-            result /= np.abs(windowVals).sum()**2
+            result /= np.abs(windowVals).sum() ** 2
 
-    t = np.arange(NFFT/2, len(x) - NFFT/2 + 1, NFFT - noverlap)/Fs
+    t = np.arange(NFFT / 2, len(x) - NFFT / 2 + 1, NFFT - noverlap) / Fs
 
     if sides == 'twosided':
         # center the frequency range at zero
@@ -671,22 +670,22 @@ def _spectral_helper(x, y=None, NFFT=None, Fs=None, detrend_func=None,
     # we unwrap the phase here to handle the onesided vs. twosided case
     if mode == 'phase':
         result = np.unwrap(result, axis=0)
-    print("_spectral_helper freqs:",freqs)
+    # print("_spectral_helper freqs:",freqs) # 等差数列0-22050, 43 为差,共512个
     return result, freqs, t
 
+# test
 # def rolling_window(a, window):
-    # shape = a.shape[:-1] + (a.shape[-1] - window + 1, window)
-    ##shape:(4,3)  a.shape:(6,)   a.shape[:-1]:()   a.shape[-1]:6
-    # print("shape",shape,a.shape,a.shape[:-1],a.shape[-1])
-    # strides = a.strides + (a.strides[-1],)
-    # print("strides:",a.strides,strides)
-    # return np.lib.stride_tricks.as_strided(a, shape=shape, strides=strides)
-    
-# a = np.array([1, 12, 3, 4, 5, 6]); 
+# shape = a.shape[:-1] + (a.shape[-1] - window + 1, window)
+##shape:(4,3)  a.shape:(6,)   a.shape[:-1]:()   a.shape[-1]:6
+# print("shape",shape,a.shape,a.shape[:-1],a.shape[-1])
+# strides = a.strides + (a.strides[-1],)
+# print("strides:",a.strides,strides)
+# return np.lib.stride_tricks.as_strided(a, shape=shape, strides=strides)
+
+# a = np.array([1, 12, 3, 4, 5, 6]);
 # b = rolling_window(a, 3)
 # print("rolling_window:",b)
 # c = np.lib.stride_tricks.as_strided(a, shape=(4,3), strides=(4,4))
 # print("strides:",c)
 
- 
-    
+
