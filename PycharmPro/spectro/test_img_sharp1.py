@@ -1,19 +1,7 @@
-import numpy as np, wave,math
-# import matplotlib.cbook as cbook
-# from matplotlib import docstring
-# from matplotlib.path import Path
-import matplotlib.pyplot as plt 
-# import math
+
+import matplotlib.pyplot as plt
 from skimage import io,data,filters
 import test_spec
-import test_huadongtiao
-
-# img=data.astronaut()
-# img_sob1 = sobelEdge(img,sobel_1)
-# imshow(img_sob1)
-
-
-# -*- coding: utf-8 -*-
 import cv2
 import numpy as np
 import math
@@ -59,6 +47,7 @@ def imgYuzhi(image,yuzhi = 20):
     image[image < yuzhi] = 0
     return image
 
+
 # 检查左值连续性
 def imgConv_fjc(image,yuzhi = 40):
     img_h = int(image.shape[0])
@@ -84,9 +73,7 @@ def imgConv_fjc(image,yuzhi = 40):
 
     return image_convolve
 
-y_w = 10
-x_w = 10
-yuzhi = 40
+
 # 检查峰值 y 方向,即每列的峰值，# x_w 每个采样列的宽度
 def imgPeak_fjc(image):
     img_h = int(image.shape[0])
@@ -113,6 +100,97 @@ def imgPeak_fjc(image):
 
     return image_convolve
 
+# 带连续性的点
+class Point_Conti:
+    huidu = 0
+    i = 0
+    j = 0
+    LineIndex = 0
+    LineV = 0
+
+image_Lines = {(0,0):Point_Conti()}
+maxLineVDic = {}
+# 连续性 这里只要有一个点是段的,就认为连续性中断,以后可以优化为可调节,需要考虑多个点属于一个连续性的问题
+def imgLines_fjc(image,x_w=10,y_w=10,yuzhi=50):
+    img_h = int(image.shape[0])
+    img_w = int(image.shape[1])
+    image_convolve = np.zeros(image.shape)
+    # image_Lines = np.zeros([image_convolve.shape[0],image_convolve.shape[1],1])
+    maxLineV = 0
+    maxLineV_x_w = 0
+    maxLinev_y_w = 0
+    maxLinev_yuzhi = 0
+    global  maxLineVDic
+    cnt_Huidu = 0
+
+    point = Point_Conti()
+    test = []
+    test.append(point)
+    test1 = [Point_Conti()]
+    test1.append(point)
+
+    print("point:",point.j,point.i)
+    for j in range(y_w, img_w,y_w):
+        for i in range(x_w, img_h,x_w):
+            cur_huidu = np.sum(image[i:i+x_w, j:j+y_w])
+            # # print("cur_huidu:",cur_huidu,np.max(image),np.max(image[10:20,320:340]))
+            # iend = i+x_w;jend=j+y_w;
+            # if cur_huidu == 0:
+            #     continue
+            # else:
+            #     # image_convolve[i:i+x_w,j:j+y_w] = 200
+            #     # continue
+            #     tttttt=1
+            # print("---------------cur_huidu: i:", cur_huidu,i,j) #, np.max(image), np.max(image[i:iend,j:jend]),i,iend,j,jend)
+
+            x_left = i+x_w
+            y_left = j-y_w
+            cur_huidu_left = np.sum(image[i:x_left, y_left:j])
+
+            point = Point_Conti()
+            point.i = i
+            point.j = j
+            # print("cur_huidu_left yuzhi:",cur_huidu_left,yuzhi)
+            # if cur_huidu_left<yuzhi:
+            #     x_left = j+y_w
+            #     cur_huidu_left = np.sum(image[x_left:i, j:y_left])
+            # if cur_huidu_left<yuzhi:
+            #     y_left = j+2*y_w
+            #     cur_huidu_left = np.sum(image[x_left:i, j:y_left])
+            # else:
+            #     print("cur_huidu_left ==0",i,j)
+            point_left = image_Lines.get((x_left, y_left), Point_Conti())
+            if point_left!=None:
+                if cur_huidu_left >= yuzhi:
+
+                    point.LineIndex = point_left.LineIndex
+                    point.LineV = point_left.LineV +1
+                    point.huidu = cur_huidu
+
+                    image_Lines[(i ,j)] = point
+                    maxLineV = max(maxLineV,point.LineV)
+                    maxLineVDic = {maxLineV:(maxLineV,x_w,y_w,yuzhi)}
+                    cnt_Huidu +=1
+
+                    print("====i,j,huidu", i, j, cur_huidu)
+            else:
+                image_Lines[(i - x_w, j - y_w)] = Point_Conti()
+                image_Lines[(i - x_w, j - y_w)].LineIndex+=1;
+                print("---------------------LineIndex:",image_Lines[(i - x_w, j - y_w)].LineIndex)
+
+    print("maxLineV:",maxLineV,"cnt_huidu:",cnt_Huidu)
+    sorted(image_Lines.keys())
+
+    for i in range(0, img_h):
+        for j in range(0, img_w):
+            if (i,j) in image_Lines:
+                point = image_Lines.get((i,j),Point_Conti())
+                if point.huidu !=0 and point.LineV>=0:
+                    image_convolve[i:i+x_w,j:j+y_w] = point.huidu
+                    image_convolve[i:i + x_w, j:j + y_w] = image[i:i+x_w,j:j+y_w]
+                    # print("i,i+x_w,j,j+j_w huidu: max:",i,i+x_w,j,j+y_w,point.huidu,np.max(image_convolve))
+
+    return image_convolve,maxLineV ,maxLineVDic.get(maxLineV)
 
 def Huadong_backCall(x):
     print("Huadong_backCall",x)
@@ -141,7 +219,14 @@ def TestConv(img,sob):
     cv2.createTrackbar('R', 'image', 0, 255, Huadong_backCall)
     cv2.createTrackbar('G', 'image', 0, 255, Huadong_backCall1)
     cv2.createTrackbar('B', 'image', 0, 255, Huadong_backCall2)
-
+    print("max(img):",np.max(img))
+    plt.imshow(img, cmap="Greys")
+    plt.show()
+    img[img<100] = 0
+    plt.imshow(img, cmap="Greys")
+    plt.show()
+    # plt.hist(img.ravel(), 256)
+    # plt.show()
     while (True):
         if cv2.waitKey(1) == 27:
             break
@@ -150,35 +235,47 @@ def TestConv(img,sob):
         max_val = cv2.getTrackbarPos('R', 'image')
         min_val = cv2.getTrackbarPos('G', 'image')
 
-        edges = cv2.Canny(img, min_val, max_val)
-        print("edges shape:",edges.shape)
-        cv2.imshow('window2', edges)
+        # edges = cv2.Canny(img, min_val, max_val)
+        # print("edges shape:",edges.shape)
+        # cv2.imshow('window1', edges)
+        img_sobel =[]
+        maxLineV_final = 0;xw_final =0;yw_final = 0;yuzhi_final=50;
+        for x_w in range(15,16):
+            for y_w in range(15,16):
+                for yuzhi in range(1,2):
+                    img_sobel,maxLineV,dic= imgLines_fjc(img,x_w,y_w,yuzhi)
+                    maxLineV_final = max(maxLineV_final,maxLineV)
+                    print("img.shape:",img.shape,type(img),"img_sobel shape:",img_sobel.shape,type(img_sobel),maxLineV)
+                    img_sobel = np.clip(img_sobel, 0, 255)  # 归一化
+                    img_sobel = np.array(img_sobel, np.uint8)
+                    cv2.imshow('window2', img_sobel)
 
-        img_sobel = imgPeak_fjc(img)
-        # plt.imshow(img_sobel, cmap="Greys")
-        print("img_sobel shape:",img_sobel.shape)
-        cv2.imshow('window1', img)
-
+        # img_sobel = np.array(img_sobel)
+        # print("img_sobel shape:", img_sobel.shape, type(img_sobel), maxLineV_final)
+        plt.imshow(img_sobel,cmap="Greys")
+        plt.show()
+        print("maxLineV_final:",maxLineV_final) # maxLineVDic[maxLineV_final]
+        break
         # 按下ESC键退出
         if cv2.waitKey(30) == 27:
             break
 
-    plt.figure('TestConv', figsize=(8, 8))
-    plt.subplot(121)
-    # plt.imshow(img, plt.cm.gray)
-    plt.imshow(img, cmap="Greys")
-    # img_sobel = imgConvolve(img,sob)
-    # img_sobel = imgConv_fjc(img)
-    img_sobel = imgPeak_fjc(img)
-    plt.subplot(122)
-    plt.imshow(img_sobel,cmap="Greys")
-    plt.show()
+    # plt.figure('TestConv', figsize=(8, 8))
+    # plt.subplot(121)
+    # # plt.imshow(img, plt.cm.gray)
+    # plt.imshow(img, cmap="Greys")
+    # # img_sobel = imgConvolve(img,sob)
+    # # img_sobel = imgConv_fjc(img)
+    # # img_sobel = imgPeak_fjc(img)
+    # img_sobel = imgLines_fjc(img)
+    # plt.subplot(122)
+    # plt.imshow(img_sobel,cmap="Greys")
+    # plt.show()
 
 # img = data.camera()
 img = test_spec.GetWavData()
 img = np.clip(img,0,255) # 归一化
-# 因为opencv读取文件默认CV_8U类型，在做完卷积后会转化为CV_32FC1类型的矩阵来提高精度或者避免舍入误差。需要clip之后转换为np.uint8。
-img = np.array(img,np.uint8)
+img = np.array(img,np.uint8)# 因为opencv读取文件默认CV_8U类型，在做完卷积后会转化为CV_32FC1类型的矩阵来提高精度或者避免舍入误差。需要clip之后转换为np.uint8。
 
 # 对角线
 # img = np.eye(5,4,3)
@@ -192,21 +289,34 @@ img = np.array(img,np.uint8)
 # img = np.insert(img,5,col,1)
 
 sob = sobel_1
-# sob = np.array([[0,0,0],
-#        [1,1,1],
-#        [0,0,0]])
-print("img.shape:",img)
 
-test_huadongtiao.Huadong(Huadong_backCall,Huadong_backCall1,Huadong_backCall2)
+
 TestConv(img,sob)
 
-# while True:
-#     if cv2.waitKey(1) == 27:
-#         print("---------------------------------------")
-#         TestConv(img,sob)
+def TestSlice():
+    test = [[0,1,2,3],
+            [4,5,6,7],
+            [8,9,10,11]]
 
+    # print("===:",test[2:3,2:3]) # list indices must be integers or slices, not tuple
+    print("==:",test[2:3][2:3]) #[]
+    # print(test[1:3,1:3]) #list indices must be integers or slices, not tuple
+    testa = np.array(test)
+    # print("test.shape:",test.shape)#'list' object has no attribute 'shape'
+    print("testa.shape:", testa.shape)
+    print("===",testa[2:3,2:3])
+    print("====",testa[1:3,1:3])
 
+    # a = np.arange(12).reshape([3,4])
+    a = np.array(test)
+    print(a)
+    print("a:",a[1,1])
+    print("b:",a[1:,1:])
+    # 每个维度可以使用步长跳跃切片
+    print("c:",a[::2,1:])
+    # 多维数组取步长要用冒号
+    print("d:",a[0::2,1:])
+    print("e:",a[1:3,1:3])
+    print("f:", a[2:3, 2:4],np.sum(a[2:3,2:4]))
 
-# sob[sob>0]=2
-# print(sob)
-
+# TestSlice()
