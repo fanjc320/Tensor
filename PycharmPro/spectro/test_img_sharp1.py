@@ -1,4 +1,3 @@
-
 import matplotlib.pyplot as plt
 from skimage import io,data,filters
 import test_spec
@@ -110,8 +109,9 @@ class Point_Conti:
 
 image_Lines = {(0,0):Point_Conti()}
 maxLineVDic = {}
+lianXuCnt = 0
 # 连续性 这里只要有一个点是段的,就认为连续性中断,以后可以优化为可调节,需要考虑多个点属于一个连续性的问题
-def imgLines_fjc(image,x_w=10,y_w=10,yuzhi=50):
+def imgLines_fjc(image,x_w=10,x_nub=1,y_w=10,y_nub=1,yuzhi=50,fangge =5):
     img_h = int(image.shape[0])
     img_w = int(image.shape[1])
     image_convolve = np.zeros(image.shape)
@@ -132,7 +132,7 @@ def imgLines_fjc(image,x_w=10,y_w=10,yuzhi=50):
     print("point:",point.j,point.i)
     for j in range(y_w, img_w,y_w):
         for i in range(x_w, img_h,x_w):
-            cur_huidu = np.sum(image[i:i+x_w, j:j+y_w])
+            cur_huidu = np.sum(image[i-x_w:i+x_w, j:j+y_w])
             # # print("cur_huidu:",cur_huidu,np.max(image),np.max(image[10:20,320:340]))
             # iend = i+x_w;jend=j+y_w;
             # if cur_huidu == 0:
@@ -143,9 +143,39 @@ def imgLines_fjc(image,x_w=10,y_w=10,yuzhi=50):
             #     tttttt=1
             # print("---------------cur_huidu: i:", cur_huidu,i,j) #, np.max(image), np.max(image[i:iend,j:jend]),i,iend,j,jend)
 
-            x_left = i+x_w
-            y_left = j-y_w
-            cur_huidu_left = np.sum(image[i:x_left, y_left:j])
+
+
+            maxLianxu = 0
+            max_x = 1
+            max_y = 1
+            # fangge的大小是调节的关键所在，当图像只剩一条线，这个fangge大小就是最佳的
+            # 向左面寻找连续性最大的区域
+            for x_n in range(1,5):
+                for y_n in range(1,5):
+                    point = Point_Conti()
+                    point.i = i
+                    point.j = j
+                    point_cur= image_Lines.get((i-x_n*fangge:i+x_n*fangge, y-y_n*fangge:y),point )
+                    lianxu = point_cur.LineV
+                    if lianxu>maxLianxu:
+                        maxLianxu = lianxu
+                        max_x = x_n
+                        max_y = y_n
+            # 假如找到的最大连续性的点为0，那么寻找左面灰度最大的区域
+            if maxLianxu == 0:
+                if i>=x_n*fangge and j>=y_n*fangge:
+
+                    huidu = np.sum(image[i-x_n*fangge:i,j-y_n*fangge:j])
+                    if huidu >= yuzhi:
+                        global lianXuCnt
+                        lianXuCnt=lianXuCnt+1
+                        print("liangxu number:",lianXuCnt)
+                        point_new= Point_Conti()
+                        point_new.i = i-x_n*fangge
+                        point_new.j = j-y_n*fangge
+                        point_left = image_Lines.get((point.i, point.j), point_new)
+                        if point_left.huidu> = yuzhi
+                        break
 
             point = Point_Conti()
             point.i = i
@@ -159,6 +189,10 @@ def imgLines_fjc(image,x_w=10,y_w=10,yuzhi=50):
             #     cur_huidu_left = np.sum(image[x_left:i, j:y_left])
             # else:
             #     print("cur_huidu_left ==0",i,j)
+            '''
+            x_left = i+x_w
+            y_left = j-y_w
+            cur_huidu_left = np.sum(image[i:x_left, y_left:j])
             point_left = image_Lines.get((x_left, y_left), Point_Conti())
             if point_left!=None:
                 if cur_huidu_left >= yuzhi:
@@ -180,6 +214,7 @@ def imgLines_fjc(image,x_w=10,y_w=10,yuzhi=50):
 
     print("maxLineV:",maxLineV,"cnt_huidu:",cnt_Huidu)
     sorted(image_Lines.keys())
+    '''
 
     for i in range(0, img_h):
         for j in range(0, img_w):
@@ -193,16 +228,8 @@ def imgLines_fjc(image,x_w=10,y_w=10,yuzhi=50):
     return image_convolve,maxLineV ,maxLineVDic.get(maxLineV)
 
 def Huadong_backCall(x):
-    print("Huadong_backCall",x)
-    x_w = x
+    pass
 
-def Huadong_backCall1(x):
-    print("Huadong_backCall",x)
-    y_w = x
-
-def Huadong_backCall2(x):
-    print("Huadong_backCall",x)
-    yuzhi = x
 
 # sobel 算子
 sobel_1 = np.array([[-1, 0, 1],
@@ -216,15 +243,17 @@ sobel_2 = np.array([[-1, -2, -1],
 def TestConv(img,sob):
     # img = np.zeros((300, 512, 3), np.uint8)
     cv2.namedWindow('image')
-    cv2.createTrackbar('R', 'image', 0, 255, Huadong_backCall)
-    cv2.createTrackbar('G', 'image', 0, 255, Huadong_backCall1)
-    cv2.createTrackbar('B', 'image', 0, 255, Huadong_backCall2)
+    cv2.createTrackbar('min', 'image', 0, 255,Huadong_backCall)
+    cv2.createTrackbar('max', 'image', 0, 255,Huadong_backCall)
+    cv2.createTrackbar('x_w', 'window2', 10, 25,Huadong_backCall)
+    cv2.createTrackbar('y_w', 'window2', 10, 25,Huadong_backCall)
+    cv2.createTrackbar('yuzhi', 'window2', 0, 55,Huadong_backCall)
     print("max(img):",np.max(img))
-    plt.imshow(img, cmap="Greys")
-    plt.show()
+    # plt.imshow(img, cmap="Greys")
+    # plt.show()
     img[img<100] = 0
-    plt.imshow(img, cmap="Greys")
-    plt.show()
+    # plt.imshow(img, cmap="Greys")
+    # plt.show()
     # plt.hist(img.ravel(), 256)
     # plt.show()
     while (True):
@@ -232,18 +261,22 @@ def TestConv(img,sob):
             break
         cv2.imshow('image', img)
         # 获取滑动条的值
-        max_val = cv2.getTrackbarPos('R', 'image')
-        min_val = cv2.getTrackbarPos('G', 'image')
+        max_val = cv2.getTrackbarPos('min', 'image')
+        min_val = cv2.getTrackbarPos('max', 'image')
+        x_w= cv2.getTrackbarPos('x_w', 'window2')
+        y_w = cv2.getTrackbarPos('y_w', 'window2')
+        yuzhi = cv2.getTrackbarPos('yuzhi', 'window2')
 
-        # edges = cv2.Canny(img, min_val, max_val)
+        edges = cv2.Canny(img, min_val, max_val) # 似乎R255,G0效果挺好
         # print("edges shape:",edges.shape)
-        # cv2.imshow('window1', edges)
+        cv2.imshow('window1', edges)
         img_sobel =[]
         maxLineV_final = 0;xw_final =0;yw_final = 0;yuzhi_final=50;
         for x_w in range(15,16):
             for y_w in range(15,16):
-                for yuzhi in range(1,2):
+                for yuzhi in range(2,3):
                     img_sobel,maxLineV,dic= imgLines_fjc(img,x_w,y_w,yuzhi)
+                    # img_sobel,maxLineV,dic= imgLines_fjc(edges,x_w,y_w,yuzhi)
                     maxLineV_final = max(maxLineV_final,maxLineV)
                     print("img.shape:",img.shape,type(img),"img_sobel shape:",img_sobel.shape,type(img_sobel),maxLineV)
                     img_sobel = np.clip(img_sobel, 0, 255)  # 归一化
@@ -252,8 +285,8 @@ def TestConv(img,sob):
 
         # img_sobel = np.array(img_sobel)
         # print("img_sobel shape:", img_sobel.shape, type(img_sobel), maxLineV_final)
-        plt.imshow(img_sobel,cmap="Greys")
-        plt.show()
+        # plt.imshow(img_sobel,cmap="Greys")
+        # plt.show()
         print("maxLineV_final:",maxLineV_final) # maxLineVDic[maxLineV_final]
         break
         # 按下ESC键退出

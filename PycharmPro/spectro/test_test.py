@@ -1,4 +1,5 @@
 import numpy as np, wave,math
+import cv2
 import matplotlib.cbook as cbook
 from matplotlib import docstring
 from matplotlib.path import Path

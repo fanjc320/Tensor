@@ -11,7 +11,6 @@ import scipy.signal as signal
 
 
 # -*- coding: utf-8 -*-
-import cv2
 import numpy as np
 import math
 
@@ -225,7 +224,7 @@ def TestSobel():
     plt.show()
 
 
-import cv2
+#import cv2
 import numpy as np
 
 
