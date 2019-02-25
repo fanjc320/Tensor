@@ -110,8 +110,9 @@ class Point_Conti:
 image_Lines = {(0,0):Point_Conti()}
 maxLineVDic = {}
 lianXuCnt = 0
+# 需要调整的参数 huidu_yuzhi  fangge lianxu_yuzhi,需要有检测最佳结果的方法
 # 连续性 这里只要有一个点是段的,就认为连续性中断,以后可以优化为可调节,需要考虑多个点属于一个连续性的问题
-def imgLines_fjc(image,x_w=10,x_nub=1,y_nub=1,yuzhi=50,fangge =5):
+def imgLines_fjc(image,huidu_yuzhi=50,fangge =5,lianxu_yuzhi=5):
     img_h = int(image.shape[0])
     img_w = int(image.shape[1])
     image_convolve = np.zeros(image.shape)
@@ -132,7 +133,7 @@ def imgLines_fjc(image,x_w=10,x_nub=1,y_nub=1,yuzhi=50,fangge =5):
     print("point:",point.j,point.i)
     for j in range(fangge, img_w,fangge):
         for i in range(fangge, img_h,fangge):
-            # cur_huidu = np.sum(image[i-fangge:i+fangge, j:j+fangge])
+            cur_huidu = np.sum(image[i:i+fangge, j:j+fangge])
             # # print("cur_huidu:",cur_huidu,np.max(image),np.max(image[10:20,320:340]))
             # iend = i+x_w;jend=j+y_w;
             # if cur_huidu == 0:
@@ -143,6 +144,10 @@ def imgLines_fjc(image,x_w=10,x_nub=1,y_nub=1,yuzhi=50,fangge =5):
             #     tttttt=1
             # print("---------------cur_huidu: i:", cur_huidu,i,j) #, np.max(image), np.max(image[i:iend,j:jend]),i,iend,j,jend)
 
+            # 当前自定义格子的灰度要大于某一阈值
+            if cur_huidu < 1:
+                print("cur_huidu==0 ",i,j,np.sum(image[i:i+fangge, j:j+fangge]))
+                continue
             point_cur = image_Lines.setdefault((i, j), point)
             maxLianxu = 0
             max_x = 1
@@ -152,8 +157,8 @@ def imgLines_fjc(image,x_w=10,x_nub=1,y_nub=1,yuzhi=50,fangge =5):
             point.j = j
             # fangge的大小是调节的关键所在，当图像只剩一条线，这个fangge大小就是最佳的
             # 向左面寻找连续性最大的区域
-            for x_n in range(-3,3):
-                for y_n in range(1,5):
+            for x_n in range(-2,2):
+                for y_n in range(1,3):
                     if i - x_n * fangge >= 0 and i - x_n * fangge < img_h and j - y_n * fangge >= 0 and j - y_n * fangge < img_w:
                         point_left= image_Lines.setdefault((i-x_n*fangge, j-y_n*fangge),point)
                         lianxu = point_left.LineV
@@ -164,21 +169,18 @@ def imgLines_fjc(image,x_w=10,x_nub=1,y_nub=1,yuzhi=50,fangge =5):
             # 左面区域的点的最大连续值
             if maxLianxu>0:
                 point_cur.LineV = maxLianxu + 1
-                print("--- LineV: ",point_cur.LineV)
+                # print("--- LineV: ",point_cur.LineV)
             else:
             # 假如找到的最大连续性的点为0，那么寻找左面灰度最大的区域
-                for x_n in range(-3,3):
-                    for y_n in range(1,5):
+                for x_n in range(-2,2):
+                    for y_n in range(1,3):
                         if i-x_n*fangge>=0 and i-x_n*fangge<img_h and j-y_n*fangge>=0 and j-y_n*fangge<img_w:
                             point_left = image_Lines.setdefault((i-x_n*fangge, j-y_n*fangge), point)
                             huidu_left = np.sum(image[i-x_n*fangge,j-y_n*fangge])
-                            if huidu_left >= yuzhi:
+                            if huidu_left >= huidu_yuzhi:
                                 # global lianXuCnt
                                 # lianXuCnt=lianXuCnt+1
                                 # print("liangxu number:",lianXuCnt)
-                                # point_new= Point_Conti()
-                                # point_new.i = i-x_n*fangge
-                                # point_new.j = j-y_n*fangge
                                 point_cur.LineV = 1 # 左面没有连续值>1的点,那么自己就是连续的初始 # 引用
                                 print("---------------- point_left.LineV==:", point_cur.LineV,image_Lines[(i, j)].LineV,"i:",i,"j:",j)
 
@@ -189,42 +191,14 @@ def imgLines_fjc(image,x_w=10,x_nub=1,y_nub=1,yuzhi=50,fangge =5):
             point.i = i
             point.j = j
 
-            '''
-            x_left = i+x_w
-            y_left = j-y_w
-            cur_huidu_left = np.sum(image[i:x_left, y_left:j])
-            point_left = image_Lines.get((x_left, y_left), Point_Conti())
-            if point_left!=None:
-                if cur_huidu_left >= yuzhi:
-
-                    point.LineIndex = point_left.LineIndex
-                    point.LineV = point_left.LineV +1
-                    point.huidu = cur_huidu
-
-                    image_Lines[(i ,j)] = point
-                    maxLineV = max(maxLineV,point.LineV)
-                    maxLineVDic = {maxLineV:(maxLineV,x_w,y_w,yuzhi)}
-                    cnt_Huidu +=1
-
-                    print("====i,j,huidu", i, j, cur_huidu)
-            else:
-                image_Lines[(i - x_w, j - y_w)] = Point_Conti()
-                image_Lines[(i - x_w, j - y_w)].LineIndex+=1;
-                print("---------------------LineIndex:",image_Lines[(i - x_w, j - y_w)].LineIndex)
-
-    print("maxLineV:",maxLineV,"cnt_huidu:",cnt_Huidu)
-    sorted(image_Lines.keys())
-    '''
-
-
     for (i,j) in image_Lines:
         point = image_Lines.get((i,j),Point_Conti())
-        if point.LineV>=10:
+        if point.LineV>=lianxu_yuzhi:
             # image_convolve[i:i+fangge,j:j+fangge] = point.huidu
             image_convolve[i:i + fangge, j:j + fangge] = image[i:i+fangge,j:j+fangge]
-            print("i,i+x_w,j,j+j_w huidu: max:",i,j,image[i:i+fangge,j:j+fangge],np.max(image_convolve))
-        else:
-            print("=== error ================================",point.huidu,point.LineV, i,j)
+            # print("i,i+x_w,j,j+j_w huidu: max:",i,j,image[i:i+fangge,j:j+fangge],np.max(image_convolve))
+        # else:
+        #     print("=== error ================================",point.huidu,point.LineV, i,j)
 
     return image_convolve,maxLineV ,maxLineVDic.get(maxLineV)
 
@@ -273,11 +247,11 @@ def TestConv(img,sob):
         cv2.imshow('window1', edges)
         img_sobel =[]
         maxLineV_final = 0;xw_final =0;yw_final = 0;yuzhi_final=50;
-        for x_w in range(15,16):
-            for y_w in range(15,16):
-                for yuzhi in range(2,3):
-                    img_sobel,maxLineV,dic= imgLines_fjc(img)
-                    # img_sobel,maxLineV,dic= imgLines_fjc(edges,x_w,y_w,yuzhi)
+        for huidu_yuzhi in range(15,16):
+            for fangge in range(15,16):
+                for lianxu_yuzhi in range(2,3):
+                    # img_sobel,maxLineV,dic= imgLines_fjc(img,huidu_yuzhi = huidu_yuzhi,fangge=fangge,lianxu_yuzhi=lianxu_yuzhi)
+                    img_sobel, maxLineV, dic = imgLines_fjc(img)
                     maxLineV_final = max(maxLineV_final,maxLineV)
                     print("img.shape:",img.shape,type(img),"img_sobel shape:",img_sobel.shape,type(img_sobel),maxLineV)
                     img_sobel = np.clip(img_sobel, 0, 255)  # 归一化
