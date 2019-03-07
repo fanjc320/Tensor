@@ -230,76 +230,6 @@ def GetRightShortLine_Image(image,i,j,changdu=4,fangge=5):
 ########################################### END #############################################
 
 
-########################################### BEGIN 连接相邻点成线段的模型 ###########################################
-# 获取方块数组内，所有可能连续的线段
-# 假如按点的方式一个个去寻找，连接，可能算法被优化，也可能复杂度是一样的，
-# def GetAllLinesFromArr(arr,size=5,lianxuYuzhi=1): 有5*5*5*5*5种可能性，都要一一比较,不好
-
-def GetBestLineFromArr(arr,size=5,yuzhi=1,lianxuYuzhi=1):
-    linesAll=[]
-    def GetAllLines(line,curj=0,lianxuAll=0,huiduAll=0):
-        haveBegin = False
-        if curj==0:
-            for i in range(size):
-                if arr[i,0]>=yuzhi:
-                    line = [(i,0)]
-                    curj=1
-                    haveBegin = True
-                    GetAllLines(line, curj + 1, 0, arr[i,0])
-        if len(line)==0 and haveBegin==False:
-            print("errrrrrrrrrrrrrr!!!!!!!!!!!!!!!!")
-            return
-        if curj==size:
-            linesAll.append((line,lianxuAll,huiduAll))
-            print("ok!!!!!!!!!!! line:", line,lianxuAll,huiduAll)
-            return
-
-        lasti = line[-1][0]
-        top = max(lasti-lianxuYuzhi,0);
-        down = min(lasti+lianxuYuzhi,size-1)
-        # print("lasti top down curj:",lasti,top,down,curj)
-        for i in range(top,down+1):
-            curHuidu = arr[i,curj]
-            if curHuidu>=yuzhi:
-                lianxuCha = abs(i-lasti)
-                newline=line+[(i,curj)]# 假设是引用
-                # print("newLines:",line,i,curj)
-                GetAllLines(newline,curj+1,lianxuAll+lianxuCha,huiduAll+curHuidu)
-
-    line = []
-    GetAllLines(line, 0, 0, 0)
-    print("linesalllll:",linesAll)
-    if len(linesAll)==0:
-        print("lineaAsll ==0!!!!!!!!!!!!!!!")
-        return  None
-    minLianxu = linesAll[0][1]
-    maxHuidu = linesAll[0][2]
-    bestIndex=0
-    for index in range(len(linesAll)):
-        item = linesAll[index]
-        if item[1]<minLianxu:#取连续差值较小的线
-            minLianxu = item[1]
-            maxHuidu = item[2]
-            bestIndex = index
-        elif item[1]==minLianxu and item[2]>maxHuidu:# 连续差值小的基础上取灰度值较大的线
-            minLianxu = item[1]
-            maxHuidu = item[2]
-            bestIndex = index
-
-    print("BestIndex:",bestIndex)
-    return linesAll[bestIndex][0]
-
-arr = [
-    [0,0,0,0,0],
-    [1,0,0,0,0],
-    [0,1,0,1,1],
-    [0,0,1,0,0],
-    [0,0,2,0,1]
-]
-
-arr = np.array(arr)
-# GetBestLineFromArr(arr,5,1,2)
-
 #img是总图像的一小部分
 def GetBestLineFromImg(img,fangge=1,yuzhi=1,lianxuYuzhi=1,curJ_=0,img_New=[]):
     print("img:",img)
@@ -315,12 +245,14 @@ def GetBestLineFromImg(img,fangge=1,yuzhi=1,lianxuYuzhi=1,curJ_=0,img_New=[]):
             duanlie = 0  # 初始化断裂的点数为0
             for i in range(img.shape[0]):
                 curHuidu = np.sum(img[i:i + fangge, curj:curj + fangge])
+                # todo 大于阈值，改为竖向局部极大值
+                print("curhuidu i,curj,fangge,",curHuidu,i,curj,fangge)
                 if curHuidu >= yuzhi:
                     line = [(i, curj)]
                     haveBegin = True
                     stopJ = curj
                     print("begin i:", i, curj)
-                    GetAllLines_New(line, curj + 1, lianxuAll, huiduAll + curHuidu)
+                    GetAllLines_New(line, curj + fangge, lianxuAll, huiduAll + curHuidu)
             if haveBegin == False:
                 print("errrrrrrrrrrrrrr!!!!!!!!!!!!!!!!")
                 GetAllLines_New(line, curj + 1, lianxuAll, huiduAll + curHuidu)
@@ -343,18 +275,21 @@ def GetBestLineFromImg(img,fangge=1,yuzhi=1,lianxuYuzhi=1,curJ_=0,img_New=[]):
                     lianxuCha = abs(i - lasti)
                     newline = line + [(i, curj)]  # 假设是引用
                     # print("newLines:",line,i,curj)
-                    GetAllLines_New(newline, curj + 1, lianxuAll + lianxuCha, huiduAll + curHuidu)
+                    print("-",curj)
+                    GetAllLines_New(newline, curj + fangge, lianxuAll + lianxuCha, huiduAll + curHuidu)
                     lianXu = True
             if lianXu == False:  # 遇到断点
                 if duanlie == 0:  # 首次遇到断点，继续连接
-                    GetAllLines_New(line, curj + 1, lianxuAll, huiduAll, duanlie + 1)  # 遇到断点，继续连接下一个列的点
+                    print("==",curj)
+                    GetAllLines_New(line, curj + fangge, lianxuAll, huiduAll, duanlie + 1)  # 遇到断点，继续连接下一个列的点
                 else:  # 非首次遇到断点，停止连接,保存线段
+                    print("###")
                     linesAll.append((line, lianxuAll, huiduAll))  # 遇到断点，停止连接，保存线段
                 # stopJ = max(stopJ,curj)
 
-        nonlocal diGuiCnt
-        diGuiCnt = diGuiCnt+1
-        print(diGuiCnt)
+        # nonlocal diGuiCnt
+        # diGuiCnt = diGuiCnt+1
+        # print(diGuiCnt)
 
     GetAllLines_New([])
     print("--------stopJ:",stopJ)
@@ -388,7 +323,8 @@ def GetBestLineFromImg(img,fangge=1,yuzhi=1,lianxuYuzhi=1,curJ_=0,img_New=[]):
     lineBest = linesAll[bestIndex][0]
     for point in lineBest:
         if len(lineBest)>3: # todo 配置或走参数
-            img_New[point[0],point[1]]=200
+            ii = point[0];jj=point[1]
+            img_New[ii:ii+fangge,jj:jj+fangge]=200
 
     print("stopJ:------------",stopJ,img.shape[1])
     # if stopJ < img.shape[1] - 1: # 有间隔的线段，会分开成两条线段
@@ -423,16 +359,16 @@ def Test_GetBestLineFromImg():
 
     print("\n==================================================\n")
 
-Test_GetBestLineFromImg()
+# Test_GetBestLineFromImg()
 
 
 def TestImgLine(img):
     print("======================00")
     plt.imshow(img, cmap="Greys")
     plt.show()
-    plt.hist(img, 256)
+    # plt.hist(img, 256)
     plt.show()
-    line, newImg = GetBestLineFromImg(img, fangge=2, yuzhi=200, lianxuYuzhi=2, curJ_=0)
+    line, newImg = GetBestLineFromImg(img, fangge=2, yuzhi=300, lianxuYuzhi=2, curJ_=0)
     print("======================11")
     if newImg.any():
         print("======================22")
@@ -447,7 +383,9 @@ img = np.clip(img,0,255) # 归一化
 img = np.array(img,np.uint8)# 因为opencv读取文件默认CV_8U类型，在做完卷积后会转化为CV_32FC1类型的矩阵来提高精度或者避免舍入误差。需要clip之后转换为np.uint8。
 
 
-TestImgLine(img[50:60,50:60])
+TestImgLine(img[50:60,50:80])
+
+###########################          END             #####################################
 
 map_Lines = {}
 def imgLines_fjc_Line(image,huidu_yuzhi=50,fangge =5,lianxu_yuzhi=5):
