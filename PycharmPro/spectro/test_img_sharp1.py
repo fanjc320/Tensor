@@ -184,12 +184,6 @@ def imgLines_fjc(image,huidu_yuzhi=50,fangge =5,lianxu_yuzhi=5):
                                 point_cur.LineV = 1 # 左面没有连续值>1的点,那么自己就是连续的初始 # 引用
                                 print("---------------- point_left.LineV==:", point_cur.LineV,image_Lines[(i, j)].LineV,"i:",i,"j:",j)
 
-            for item in image_Lines:
-                # print("key:",item,"value:",image_Lines[item].LineV)
-                break
-            point = Point_Conti()
-            point.i = i
-            point.j = j
 
     for (i,j) in image_Lines:
         point = image_Lines.get((i,j),Point_Conti())
