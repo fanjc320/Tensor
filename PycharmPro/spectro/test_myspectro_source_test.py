@@ -3,7 +3,7 @@ import matplotlib.cbook as cbook
 import matplotlib.cm as cm
 from matplotlib.path import Path
 import matplotlib.pyplot as plt
-from skimage import data, filters
+# from skimage import data, filters
 import test_img_sharp
 # import test_img_sharp1
 

@@ -2,7 +2,7 @@ import numpy as np, wave,math
 from matplotlib.path import Path
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
-from skimage import io,data,filters
+# from skimage import io,data,filters
 import scipy.signal as signal
 
 # img=data.astronaut()

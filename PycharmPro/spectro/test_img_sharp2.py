@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-from skimage import io,data,filters
+# from skimage import io,data,filters
 import test_spec
 import cv2
 import numpy as np
@@ -255,13 +255,14 @@ def GetBestLineFromImg(img,fangge=1,yuzhi=1,lianxuYuzhi=1,curJ_=0,img_New=[]):
                     GetAllLines_New(line, curj + fangge, lianxuAll, huiduAll + curHuidu)
             if haveBegin == False:
                 print("errrrrrrrrrrrrrr!!!!!!!!!!!!!!!!")
-                GetAllLines_New(line, curj + 1, lianxuAll, huiduAll + curHuidu)
+                GetAllLines_New(line, curj + fangge, lianxuAll, huiduAll + curHuidu)
                 return
+            print("0000")
         else:  # 线段的中间和尾点
-            # print("curj:",curj,line)
-            if curj >= img.shape[1]:  # 超出了img的最大范围，停止迭代
+            print("curj:",curj,img.shape[1])
+            if curj >= img.shape[1]-fangge:  # 超出了img的最大范围，停止迭代
                 linesAll.append((line, lianxuAll, huiduAll))
-                # print("ok!!!!!!!!!!! line:", line, lianxuAll, huiduAll)
+                print("ok!!!!!!!!!!! line:", line, lianxuAll, huiduAll)
                 return
 
             lasti = line[-1][0]
@@ -275,13 +276,15 @@ def GetBestLineFromImg(img,fangge=1,yuzhi=1,lianxuYuzhi=1,curJ_=0,img_New=[]):
                     lianxuCha = abs(i - lasti)
                     newline = line + [(i, curj)]  # 假设是引用
                     # print("newLines:",line,i,curj)
-                    print("-",curj)
+                    print("-",curj,)
                     GetAllLines_New(newline, curj + fangge, lianxuAll + lianxuCha, huiduAll + curHuidu)
                     lianXu = True
+            print("==",curj)
+            curj = curj+2
             if lianXu == False:  # 遇到断点
                 if duanlie == 0:  # 首次遇到断点，继续连接
-                    print("==",curj)
-                    GetAllLines_New(line, curj + fangge, lianxuAll, huiduAll, duanlie + 1)  # 遇到断点，继续连接下一个列的点
+                    print("===",curj)
+                    # GetAllLines_New(line, curj + fangge, lianxuAll, huiduAll, duanlie + 1)  # 遇到断点，继续连接下一个列的点
                 else:  # 非首次遇到断点，停止连接,保存线段
                     print("###")
                     linesAll.append((line, lianxuAll, huiduAll))  # 遇到断点，停止连接，保存线段
