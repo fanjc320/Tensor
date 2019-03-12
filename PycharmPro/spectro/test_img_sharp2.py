@@ -4,6 +4,8 @@ import test_spec
 import cv2
 import numpy as np
 import math
+import time
+import datetime
 
 
 def imgYuzhi(image,yuzhi = 20):
@@ -229,99 +231,120 @@ def GetRightShortLine_Image(image,i,j,changdu=4,fangge=5):
 
 ########################################### END #############################################
 
+def TestDigui(i=0):
+    print(i)
+    TestDigui(i+1) #maximum recursion depth exceeded while calling a Python object
 
-#img是总图像的一小部分
+# TestDigui(2)
+
+#img是总图像的一小部分 无限输出的原因：1无限递归 2死循环,3.循环与递归耦合 递归中包含循环 小心！
+# 多分支的递归，一次递归，会有n多有限分支，必须所有分支都有终结，如果有一个分支会产生无限分支，那么这个递归就是无尽的
+# 每次递归都是有限个分支，每个分支都有尽头，就不会无尽？
+# 还有一种原因：程序递归太多，假死状态，实际并未死循环！！！！
 def GetBestLineFromImg(img,fangge=1,yuzhi=1,lianxuYuzhi=1,curJ_=0,img_New=[]):
     print("img:",img)
     linesAll=[]
     stopJ = 0
     diGuiCnt= 0
+    # todo 如何恰当的选择起始点，非常重要！！！！
     # todo 多个线段并行的情况
-    def GetAllLines_New(line=[], curj=curJ_, lianxuAll=0, huiduAll=0, duanlie=0):
+    def GetAllLines_New(line=[], curj=curJ_, lianxuAll=0, huiduAll=0, duanlie=0,digui_detpth=0):
         haveBegin = False
         nonlocal stopJ
+        nonlocal diGuiCnt
         # 线段的起始
         if len(line) == 0:
             duanlie = 0  # 初始化断裂的点数为0
             for i in range(img.shape[0]):
                 curHuidu = np.sum(img[i:i + fangge, curj:curj + fangge])
                 # todo 大于阈值，改为竖向局部极大值
-                print("curhuidu i,curj,fangge,",curHuidu,i,curj,fangge)
+                # print("curhuidu i,curj,fangge,",curHuidu,i,curj,fangge)
                 if curHuidu >= yuzhi:
                     line = [(i, curj)]
                     haveBegin = True
                     stopJ = curj
                     print("begin i:", i, curj)
-                    GetAllLines_New(line, curj + fangge, lianxuAll, huiduAll + curHuidu)
+                    GetAllLines_New(line, curj + fangge, lianxuAll, huiduAll + curHuidu,0, digui_detpth+1)
             if haveBegin == False:
                 print("errrrrrrrrrrrrrr!!!!!!!!!!!!!!!!")
-                GetAllLines_New(line, curj + fangge, lianxuAll, huiduAll + curHuidu)
+                GetAllLines_New(line, curj + fangge, lianxuAll, huiduAll + curHuidu,0,digui_detpth+1)
                 return
             print("0000")
         else:  # 线段的中间和尾点
-            print("curj:",curj,img.shape[1])
+            lasti = line[-1][0]
+            # print("curj:",curj,img.shape[1])
             if curj >= img.shape[1]-fangge:  # 超出了img的最大范围，停止迭代
                 linesAll.append((line, lianxuAll, huiduAll))
-                print("ok!!!!!!!!!!! line:", line, lianxuAll, huiduAll)
+                # print(curj,lasti,digui_detpth,"ok!!!!!!!!!!! line:", line, lianxuAll, huiduAll)
+                print(curj, lasti, digui_detpth, "ok")
                 return
 
-            lasti = line[-1][0]
+
             top = max(lasti - lianxuYuzhi, 0);
             down = min(lasti + lianxuYuzhi, img.shape[0] - 1)
-            # print("lasti top down curj:",lasti,top,down,curj)
-            lianXu = False
+            # print(curj,"===diGuiCnt:",digui_detpth,"lasti:",lasti,"curj:",curj,"top down",top,down)
+            #todo 循环取阈值改为取一个极大值，可以减少分支，但对连续性有坏处
+            maxHuidu_i = 0
+            bestI = lasti;
             for i in range(top, down + 1):
                 curHuidu = np.sum(img[i:i + fangge, curj:curj + fangge])
-                if curHuidu >= yuzhi:
-                    lianxuCha = abs(i - lasti)
-                    newline = line + [(i, curj)]  # 假设是引用
-                    # print("newLines:",line,i,curj)
-                    print("-",curj,)
-                    GetAllLines_New(newline, curj + fangge, lianxuAll + lianxuCha, huiduAll + curHuidu)
-                    lianXu = True
-            print("==",curj)
-            curj = curj+2
-            if lianXu == False:  # 遇到断点
-                if duanlie == 0:  # 首次遇到断点，继续连接
-                    print("===",curj)
-                    # GetAllLines_New(line, curj + fangge, lianxuAll, huiduAll, duanlie + 1)  # 遇到断点，继续连接下一个列的点
-                else:  # 非首次遇到断点，停止连接,保存线段
-                    print("###")
+                if curHuidu>maxHuidu_i:
+                    maxHuidu_i = curHuidu
+                    bestI = i;
+                    # print(curj,i,digui_detpth,"---diGuiCnt:", curHuidu)
+            if maxHuidu_i >= yuzhi:
+                lianxuCha = abs(bestI - lasti)
+                newline = line + [(bestI, curj)]  # 假设是引用
+                # print(curj,bestI, digui_detpth, "curHuidu>=yuzhi")
+                GetAllLines_New(newline, curj + fangge, lianxuAll + lianxuCha, huiduAll + maxHuidu_i,0,digui_detpth+1)
+                duanlie = 0
+            else:
+                if duanlie < 2:  # 遇到前2个断点，继续连接
+                    # print(curj, lasti, digui_detpth, "chao lianjie",time.time(),line)
+                    GetAllLines_New(line, curj + fangge, lianxuAll, huiduAll, duanlie + 1,digui_detpth+1)  # 遇到断点，继续连接下一个列的点
+                else:  # 遇到超过2个断点，停止连接,保存线段
+                    # print(curj, lasti, digui_detpth, "duanlie",time.time(),line)
                     linesAll.append((line, lianxuAll, huiduAll))  # 遇到断点，停止连接，保存线段
-                # stopJ = max(stopJ,curj)
-
-        # nonlocal diGuiCnt
-        # diGuiCnt = diGuiCnt+1
-        # print(diGuiCnt)
 
     GetAllLines_New([])
-    print("--------stopJ:",stopJ)
-    # print("linesalllll:",linesAll)
-    if len(linesAll)==0:
-        print("lineaAsll ==0!!!!!!!!!!!!!!!")
-        return  np.array([]),np.array([])
-    minLianxu = linesAll[0][1]
-    maxHuidu = linesAll[0][2]
-    bestIndex=0
-    # 尾点是连接点，是前一线段的尾点，同时是下一线段的始点,尾点是否应该取权重较大，而不是按连续差值较小
-    linesAll = np.array(linesAll)
-    print("linesAll shape:",linesAll.shape)
-    for index in range(linesAll.shape[0]):
-        item = linesAll[index]
-        if item[2]>maxHuidu:#取灰度值较大的线
-            minLianxu = item[1]
-            maxHuidu = item[2]
-            bestIndex = index
-            # print("bestIndex:",bestIndex)
-        elif item[2]==maxHuidu and item[1]<minLianxu:# 灰度值相等的线 取连续差值小的线
-            minLianxu = item[1]
-            maxHuidu = item[2]
-            bestIndex = index
-            # print("bbbbbestIndex:", bestIndex)
+
+    def GetBestLine(linesAll):
+        # print("linesalllll:",linesAll)
+        if len(linesAll)==0:
+            print("lineaAsll ==0!!!!!!!!!!!!!!!")
+            return  np.array([]),np.array([])
+        minLianxu = linesAll[0][1]
+        maxHuidu = linesAll[0][2]
+        bestIndex=0
+        maxLineLength = len(linesAll[0])
+        # 尾点是连接点，是前一线段的尾点，同时是下一线段的始点,尾点是否应该取权重较大，而不是按连续差值较小
+        linesAll = np.array(linesAll)
+        print("linesAll shape:",linesAll.shape)
+        for index in range(linesAll.shape[0]):
+            item = linesAll[index]
+            print("------- line:", item,item[1],item[2])
+            if item[2]>maxHuidu: # 取灰度值较大的线
+                minLianxu = item[1]
+                maxHuidu = item[2]
+                bestIndex = index
+                # print("bestIndex:",bestIndex)
+            elif len(item[0]) > maxLineLength:  # 取长度较长的线
+                maxLineLength = len(item[0])
+                maxHuidu = item[2]
+                bestIndex = index
+            elif item[2]==maxHuidu and item[1]<minLianxu:# 灰度值相等的线 取连续差值小的线
+                minLianxu = item[1]
+                maxHuidu = item[2]
+                bestIndex = index
+                # print("bbbbbestIndex:", bestIndex)
+        return  bestIndex
 
     if len(img_New)==0:
         img_New = np.zeros(img.shape)
-
+    print("len linesAll",len(linesAll))
+    if len(linesAll) == 0:
+        return np.array([]), np.array([])
+    bestIndex = GetBestLine(linesAll)
     print("bestIndex:",bestIndex)
     lineBest = linesAll[bestIndex][0]
     for point in lineBest:
@@ -329,7 +352,6 @@ def GetBestLineFromImg(img,fangge=1,yuzhi=1,lianxuYuzhi=1,curJ_=0,img_New=[]):
             ii = point[0];jj=point[1]
             img_New[ii:ii+fangge,jj:jj+fangge]=200
 
-    print("stopJ:------------",stopJ,img.shape[1])
     # if stopJ < img.shape[1] - 1: # 有间隔的线段，会分开成两条线段
     #     GetBestLineFromImg(img,fangge,yuzhi,lianxuYuzhi,stopJ,img_New)
 
@@ -352,7 +374,7 @@ def Test_GetBestLineFromImg():
     # img = np.tile(img,(2,10))
     plt.imshow(img,cmap="Greys")
     plt.show()
-    line,newImg = GetBestLineFromImg(img,fangge=1,yuzhi=1,lianxuYuzhi=2,curJ_=0)
+    line,newImg = GetBestLineFromImg(img,fangge=1,yuzhi=1,lianxuYuzhi=5,curJ_=0)
     # if newImg != None: 如果newImg是数组，判断会报错
     if newImg.any():
         plt.imshow(newImg,cmap="Greys")
@@ -369,16 +391,46 @@ def TestImgLine(img):
     print("======================00")
     plt.imshow(img, cmap="Greys")
     plt.show()
+    # img[img < 100] = 0
+    # plt.imshow(img, cmap="Greys")
+    # plt.show()
     # plt.hist(img, 256)
-    plt.show()
-    line, newImg = GetBestLineFromImg(img, fangge=2, yuzhi=300, lianxuYuzhi=2, curJ_=0)
-    print("======================11")
+    # plt.show()
+
+    cv2.namedWindow('image')
+    cv2.createTrackbar('yuzhi', 'window2', 150, 200, Huadong_backCall)
+    cv2.createTrackbar('fangge', 'window2', 1, 5, Huadong_backCall)
+    cv2.createTrackbar('lianxuYuzhi', 'window2', 1, 5, Huadong_backCall)
+
+    line, newImg = GetBestLineFromImg(img, fangge=2, yuzhi=100, lianxuYuzhi=2, curJ_=0)
+
+    # while (True):
+    #     if cv2.waitKey(30) == 27: # 30 esc键
+    #         break
+    #     cv2.imshow('image', img)
+    #     # 获取滑动条的值
+    #     yuzhi = cv2.getTrackbarPos('yuzhi', 'image')
+    #     fangge = cv2.getTrackbarPos('fangge', 'image')
+    #     lianxuYuzhi = cv2.getTrackbarPos('lianxuYuzhi', 'window2')
+    #
+    #     edges = cv2.Canny(img, 100, 256)  # 似乎R255,G0效果挺好
+    #     # print("edges shape:",edges.shape)
+    #     cv2.imshow('window1', edges)
+    #
+    #     _, newImg = GetBestLineFromImg(img,fangge=fangge,yuzhi=yuzhi,lianxuYuzhi=lianxuYuzhi,curJ_=0)
+    #
+    #     # img_sobel = np.clip(img_sobel, 0, 255)  # 归一化
+    #     # img_sobel = np.array(img_sobel, np.uint8)
+    #     cv2.imshow('window2', newImg)
+
+
+
     if newImg.any():
         print("======================22")
         plt.imshow(newImg, cmap="Greys")
         plt.show()
     else:
-        print("======================None!!!!")
+        print("======================newImg None!!!!")
 
 # img = data.camera()
 img = test_spec.GetWavData()
@@ -386,84 +438,11 @@ img = np.clip(img,0,255) # 归一化
 img = np.array(img,np.uint8)# 因为opencv读取文件默认CV_8U类型，在做完卷积后会转化为CV_32FC1类型的矩阵来提高精度或者避免舍入误差。需要clip之后转换为np.uint8。
 
 
-TestImgLine(img[50:60,50:80])
+TestImgLine(img)
 
 ###########################          END             #####################################
 
-map_Lines = {}
-def imgLines_fjc_Line(image,huidu_yuzhi=50,fangge =5,lianxu_yuzhi=5):
-    img_h = int(image.shape[0])
-    img_w = int(image.shape[1])
-    image_convolve = np.zeros(image.shape)
-    image_new = np.zeros(image.shape)
-    point_original = Point_Conti()
-    list = [point_original]*image.shape[0]*image.shape[1]
-    Points_test = np.array(list).reshape(image.shape)
-    test = []
-    testA = np.array(test)
-    print("Points_All shape:",Points_test.shape)
-    for i in range(len(image)):
-        for j in range(len(image[0])):
-            # test[i][j] = 10 #list index out of range
-            test.append(10)
-            point_original = Point_Conti()
-            point_original.i=i
-            point_original.j=j
-            point_original.huidu = image[i,j]
-            Points_test[i, j] = point_original
-            Points_test[i][j] = point_original
 
-    maxLineV = 0
-    global  maxLineVDic
-
-    map_All = {}
-    huidu_all =[]
-    for i in range(fangge, img_h,fangge):#向下
-        for j in range(fangge, img_w, fangge):#向右
-            point_original = Point_Conti()
-            point_original.i = i
-            point_original.j = j
-            point_original.huidu = np.sum(image[i:i+fangge,j:j+fangge])
-            # print("==huidu:",point_original.huidu)
-            map_All.setdefault((i, j), point_original)
-            if point_original.huidu!=0:
-                huidu_all.append(point_original.huidu)
-
-    plt.hist(huidu_all, 256)
-    plt.show()
-
-
-# todo:开始点,串成线的逻辑
-    point = Point_Conti()
-    for i in range(fangge, img_h,fangge):#向下
-        for j in range(fangge, img_w, fangge):#向右
-            cur_huidu = np.sum(image[i:i+fangge, j:j+fangge])
-            point_cur = image_Lines.setdefault((i, j), point)
-            # 第一条格子开始线段起始灰度要大于某一阈值
-            if cur_huidu<1:
-                continue
-
-            # result,maxHuiduLine,maxHuidu = GetRightShortLine_Image(image,i,j,changdu=4,fangge=5)
-            # if result and maxHuidu>100:
-            #     for point in line:
-            #         image_convolve[]
-
-
-
-            maxLianxu = 0
-            beginX = 0
-            beginY = 0
-            point = Point_Conti()
-            point.i = i
-            point.j = j
-            # fangge的大小是调节的关键所在，当图像只剩一条线，这个fangge大小就是最佳的
-            # 向左面寻找连续性最大的区域
-
-
-
-
-    return image_convolve,maxLineV ,maxLineVDic.get(maxLineV)
-    # return image_beginLianXu,maxLineV ,maxLineVDic.get(maxLineV)
 
 
 def TestConv(img):
@@ -503,16 +482,7 @@ def TestConv(img):
         for huidu_yuzhi in range(50,51):
             for fangge in range(5,6):
                 for lianxu_yuzhi in range(5,6):
-                    # line, newImg = GetBestLineFromImg(img, fangge=fangge, yuzhi=huidu_yuzhi, lianxuYuzhi=lianxu_yuzhi, curJ_=0)
-                    # plt.imshow(img, cmap="Greys")
-                    # plt.show()
-                    # print("======================11")
-                    # if newImg.any():
-                    #     print("======================22")
-                    #     plt.imshow(newImg, cmap="Greys")
-                    #     plt.show()
-                    # else:
-                    #     print("*** newImg is None!!!!!!")
+
 
                     img_sobel,maxLineV,dic= imgLines_fjc_Line(img,huidu_yuzhi = huidu_yuzhi,fangge=fangge,lianxu_yuzhi=lianxu_yuzhi)
                     # img_sobel, maxLineV, dic = imgLines_fjc(img)
@@ -535,17 +505,7 @@ def TestConv(img):
         if cv2.waitKey(30) == 27:
             break
 
-    # plt.figure('TestConv', figsize=(8, 8))
-    # plt.subplot(121)
-    # # plt.imshow(img, plt.cm.gray)
-    # plt.imshow(img, cmap="Greys")
-    # # img_sobel = imgConvolve(img,sob)
-    # # img_sobel = imgConv_fjc(img)
-    # # img_sobel = imgPeak_fjc(img)
-    # img_sobel = imgLines_fjc(img)
-    # plt.subplot(122)
-    # plt.imshow(img_sobel,cmap="Greys")
-    # plt.show()
+
 
 
 # TestConv(img)
