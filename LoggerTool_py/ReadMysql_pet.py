@@ -64,7 +64,7 @@ def readMysql(conn):
     # 默认情况下，我们获取到的返回值是元组，只能看到每行的数据，却不知道每一列代表的是什么，这个时候可以使用以下方式来返回字典，每一行的数据都会生成一个字典：
     cursor = conn.cursor(cursor=pymysql.cursors.DictCursor)  # 在实例化的时候，将属性cursor设置为pymysql.cursors.DictCursor
     # sql = "SELECT vRoleID,petid,petjson FROM delpet9001"
-    sql = "SELECT * FROM delpet"
+    sql = "SELECT * FROM pet9001"
     cursor.execute(sql)
     # res = cursor.fetchall()
     while(True):

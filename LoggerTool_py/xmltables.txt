@@ -59,4 +59,3 @@ PetLogoutEnhanceSkill	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopeni
 DelPartner	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID	iLevel	partnerName	partnerid	partnerlv	partnerjson
 DelItem	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID	iLevel	ItemName	itemid	mkid	itemjson
 DelPet	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID	iLevel	petname	petid	petlv	mkid	petjson
-PartnerOutEquip	GameSvrId	dtEventTime	vGameAppid	PlatID	iZoneAreaID	vopenid	vRoleID	iLevel	partnerId	partnerName	equipjson	equipjsonz
