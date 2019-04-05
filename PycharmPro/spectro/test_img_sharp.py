@@ -2,9 +2,9 @@ import numpy as np, wave,math
 from matplotlib.path import Path
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
-# from skimage import io,data,filters
+from skimage import io,data,filters
 import scipy.signal as signal
-
+import cv2
 # img=data.astronaut()
 # img_sob1 = sobelEdge(img,sobel_1)
 # imshow(img_sob1)
@@ -317,17 +317,19 @@ def Testimconv():
     #                      [1, 2, 1]])
 
     # Laplace算子
-    suanzi1 = np.array([[0, 1, 0],
-                        [1, -4, 1],
-                        [0, 1, 0]])
+    suanzi1 = np.array([[1, 0, -1],
+                        [2, 0, -2],
+                        [1, 0, -1]])
 
     # Laplace扩展算子
-    suanzi2 = np.array([[1, 1, 1],
-                        [1, -8, 1],
-                        [1, 1, 1]])
+    suanzi2 = np.array([[-1, 0, 1],
+                        [-2, 0, 2],
+                        [-1, 0, 1]])
 
     # 打开图像并转化成灰度图像
-    image = data.camera()
+    # image = data.camera()
+    image = cv2.imread('./resource/wall.png', 0)
+    print("image shape:",image.shape)
 
     # 转化成图像矩阵
     image_array = np.array(image)
@@ -429,7 +431,7 @@ def Testimconv_jiangzao(image):
 # TestSuanzi()
 
 
-# Testimconv()
+Testimconv()
 
 # Testimconv_jiangzao(data.astronaut()[:,:,0])
 
