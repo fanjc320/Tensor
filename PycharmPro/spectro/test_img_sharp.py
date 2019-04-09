@@ -58,7 +58,7 @@ def imconv(image_array, suanzi):
 
     # 由于卷积后灰度值不一定在0-255之间，统一化成0-255
     image_z = image_z * (255.0 / image_z.max())
-    # np.set_printoptions(threshold=np.nan) # 似乎没有此转换，图像更清晰
+    # np.set_printoptions(threshold=np.nan) # 似乎没有此转换，图像更清晰 输出所有数据，不带省略
     return image_z
 
 # 均值滤波

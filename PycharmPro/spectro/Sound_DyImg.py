@@ -16,6 +16,36 @@ def fjc_record(OutFile="../res/fjc.wav", Seconds=1):
     CHANNELS = 1 # 通过play函数测试得出结论 channels=1 占用2个字节，channels=2占用4个字节
     RATE = 44100
 
+    wavfile = wave.open(r"./res/yusheng1.wav", "rb")
+    params = wavfile.getparams()
+    print("params:", params)
+    framesra, nframes = params[2], params[3]
+    print("wavedata:",framesra,nframes)
+    spec_arr = np.array((1024,1024))
+    spec_test = np.zeros(201)
+    for i in range(nframes):
+        if i>200:
+            break
+        datawav = wavfile.readframes(1024)
+        data = np.fromstring(datawav, dtype=np.short)
+        time = np.arange(0, nframes) * (1.0 / framesra)
+        # plt.plot(data)
+        spec = fft(data)
+        np.set_printoptions(threshold=np.nan)
+        print("data:",type(data),data.shape,"spec:",type(spec),spec.shape)
+        # spec_arr[i]=spec # error
+        spec_arr = np.concatenate((spec_arr,spec),axis=0)
+        # print("spec_arr spec:",spec_arr)
+        spec_v = np.mean(abs(spec))
+        print("spec_arr_min:",spec_v)
+        # plt.plot(i,np.mean(abs(spec)))
+        spec_test[i]=spec_v
+
+    # plt.plot(range(5),[2,7,4,5,6])
+    plt.plot(range(201),spec_test)
+    plt.show()
+    # print("spec_arr:",spec_arr)
+'''
     p = pyaudio.PyAudio()
     stream = p.open(format=FORMAT,
                     channels=CHANNELS,
@@ -25,9 +55,6 @@ def fjc_record(OutFile="../res/fjc.wav", Seconds=1):
 
     print("* recording")
 
-
-
-    frames = []
     for i in range(0, int(RATE / CHUNK * Seconds)):
         data = stream.read(CHUNK)
         intdata = np.fromstring(data, dtype=np.short)
@@ -37,7 +64,7 @@ def fjc_record(OutFile="../res/fjc.wav", Seconds=1):
             # for idx in range(0,len(data),2):
             #     chunk_one = data[idx:idx+2]
             #     print("i:",idx,chunk_one,int.from_bytes(chunk_one,byteorder='big'))
-        frames.append(intdata)
+        
         # print(intdata)
         spec = fft(intdata)
         print(np.array(spec).shape)
@@ -53,7 +80,7 @@ def fjc_record(OutFile="../res/fjc.wav", Seconds=1):
     wf.setframerate(RATE)
     wf.writeframes(b''.join(frames))
     wf.close()
-
+'''
 
 fjc_record()
 
@@ -129,3 +156,43 @@ def TestBytesToInt():
     print(bytearray(b'\x04\x00')[0])
 
 # TestBytesToInt()
+
+def TestAppend():
+    a =np.array([[0, 1, 2, 3],
+           [4, 5, 6, 7],
+           [8, 9, 10, 11]])
+
+
+
+    # 内部调用concatenate
+    # all the input arrays must have same number of dimensions
+    # np.append(a, [1, 1, 1, 1], axis=0)
+    b= np.append(a, [[1, 1, 1, 1]], axis=0) # ok
+    print("b:", b)
+    tmp = np.array([1,2,3,4])
+    # b1=np.append(a,tmp,axis=0)# (4,) error
+    b1 = np.append(a, [tmp], axis=0)
+    print(tmp.shape,"b1:",b1)
+
+    #不好创建空数组,然后添加元素，添加的元素并没有纬度
+    a0=np.array([])
+    print("a0:",a0)
+    a1 = np.append(a0, [[1, 1, 2]])
+    print("a0**",a0.shape,a1,np.append(a1,[[1,1,1]]))
+
+    c=np.insert(a,0,[1,1,1,1],0)
+    print("c--:",c)
+    d=np.delete(a,1,0)
+    print("d==:",d)
+
+    x = np.zeros((0,4))
+    # y= np.array([[1,1,1,2]])
+    z=np.concatenate((x,[[1,1,1,1]]),0)
+    print(x.shape);print(z.shape)
+
+    i = np.ones(3);j=np.ones(4);
+    print(np.c_[a,i]);
+    # print(np.r_[a,i]); #error
+
+
+# TestAppend()
