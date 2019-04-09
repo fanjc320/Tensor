@@ -2,17 +2,10 @@ import numpy as np, wave,math
 from matplotlib.path import Path
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
-# from skimage import io,data,filters
+from skimage import io,data,filters
 import scipy.signal as signal
-
-# img=data.astronaut()
-# img_sob1 = sobelEdge(img,sobel_1)
-# imshow(img_sob1)
-
-
-# -*- coding: utf-8 -*-
 import numpy as np
-import math
+import cv2
 
 '''
 # @Time    : 18-3-31 下午2:16
@@ -202,32 +195,8 @@ def TestSharp(img,sob):
     plt.imshow(img_sobel,plt.cm.gray)
     plt.show()
 
-def TestSobel():
-    plt.figure('sobel',figsize=(8,8))
 
-    img = data.camera()
-    print("img shape:",img.shape)
-    edges = filters.sobel(img)
-    plt.subplot(121)
-    plt.imshow(edges,plt.cm.gray)
-
-
-    img = data.astronaut()
-    img = img[:,:,0]
-    print("2 img shape:",img.shape)
-    edges1 = filters.sobel(img)   #sigma=0.4
-
-
-    plt.subplot(122)
-    plt.imshow(edges1,plt.cm.gray)
-
-    plt.show()
-
-
-#import cv2
-import numpy as np
-
-
+###############################################################
 # robert 算子[[-1,-1],[1,1]]
 def robert_suanzi(img):
     r, c = img.shape
@@ -328,6 +297,7 @@ def Testimconv():
 
     # 打开图像并转化成灰度图像
     image = data.camera()
+    image = cv2.imread('pika.png', 0)
 
     # 转化成图像矩阵
     image_array = np.array(image)
@@ -429,7 +399,7 @@ def Testimconv_jiangzao(image):
 # TestSuanzi()
 
 
-# Testimconv()
+Testimconv()
 
 # Testimconv_jiangzao(data.astronaut()[:,:,0])
 
