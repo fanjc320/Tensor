@@ -16,7 +16,7 @@ def fjc_record(OutFile="../res/fjc.wav", Seconds=1):
     CHANNELS = 1 # 通过play函数测试得出结论 channels=1 占用2个字节，channels=2占用4个字节
     RATE = 44100
 
-    wavfile = wave.open(r"./res/yusheng1.wav", "rb")
+    wavfile = wave.open(r"../res/yusheng1.wav", "rb")
     params = wavfile.getparams()
     print("params:", params)
     framesra, nframes = params[2], params[3]
