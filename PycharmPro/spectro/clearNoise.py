@@ -58,16 +58,18 @@ def clearNoise(image, G, N, Z):
 # 测试代码
 def main():
     # 打开图片
-    image = Image.open("e:/Tensor/PycharmPro/noise.png")
+    image = Image.open("noise.png")
 
     # 将图片转换成灰度图片
     image = image.convert("L")
 
     # 去噪,G = 50,N = 4,Z = 4
-    clearNoise(image, 50, 4, 4)
+    # clearNoise(image, 50, 4, 4)
+    clearNoise(image, 0, 4, 4)
 
     # 保存图片
-    image.save("e:/Tensor/PycharmPro/result.jpg")
+    # image.save("e:/Tensor/PycharmPro/result.jpg")
+    image.save("result.jpg")
 
 
 if __name__ == '__main__':

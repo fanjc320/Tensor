@@ -4,17 +4,10 @@ import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 from skimage import io,data,filters
 import scipy.signal as signal
-import numpy as np
 import cv2
 
-'''
-# @Time    : 18-3-31 下午2:16
-# @Author  : 罗杰                  
-# @ID      : F1710w0249
-# @File    : assignments.py
-# @Desc    : 计算机视觉作业01
-'''
-
+import numpy as np
+import cv2
 
 # 卷积
 def imgConvolve(image, kernel):
@@ -32,11 +25,12 @@ def imgConvolve(image, kernel):
     padding_w = int((kernel_w - 1) / 2)
 
     convolve_h = int(img_h + 2 * padding_h)
-    convolve_W = int(img_w + 2 * padding_w)
+    convolve_w = int(img_w + 2 * padding_w)
     print("img_h:",img_h,"img_w:",img_w)
-    print("kernel:", kernel_h,"kernel shape0:", kernel.shape[0],"padding_h:", padding_h,"padding_w:",padding_w)
+    print("kernel:", kernel_h,"kernel shape0:", kernel.shape[0],"padding_h:", padding_h,"padding_w:",padding_w,
+          "convolve_h:", convolve_h,"convolve_w:",convolve_w)
     # 分配空间
-    img_padding = np.zeros((convolve_h, convolve_W))
+    img_padding = np.zeros((convolve_h, convolve_w))
     # 中心填充图片
     img_padding[padding_h:padding_h + img_h, padding_w:padding_w + img_w] = image[:, :]
     # 卷积结果
@@ -52,27 +46,20 @@ def imgConvolve(image, kernel):
 
 # 首先我们把图像卷积函数封装在一个名为imconv的函数中  ( 实际上，scipy库中的signal模块含有一个二维卷积的方法convolve2d()  )
 def imconv(image_array, suanzi):
-    '''计算卷积
-        参数
-        image_array 原灰度图像矩阵
-        suanzi      算子
-        返回
-        原图像与算子卷积后的结果矩阵
-    '''
-    image = image_array.copy()  # 原图像矩阵的深拷贝
+    # image = image_array.copy()# 原图像矩阵的深拷贝,dtype是uint8,不能做运算，会溢出,结果不对
+    image_z = np.zeros(image_array.shape)# 原图像矩阵的深拷贝
+    dim1, dim2 = image_array.shape
 
-    dim1, dim2 = image.shape
 
     # 对每个元素与算子进行乘积再求和(忽略最外圈边框像素)
     for i in range(1, dim1 - 1):
         for j in range(1, dim2 - 1):
-            image[i, j] = (image_array[(i - 1):(i + 2), (j - 1):(j + 2)] * suanzi).sum()
+            image_z[i, j] = (image_array[(i - 1):(i + 2), (j - 1):(j + 2)] * suanzi).sum()
 
     # 由于卷积后灰度值不一定在0-255之间，统一化成0-255
-    image = image * (255.0 / image.max())
-
-    # 返回结果矩阵
-    return image
+    image_z = image_z * (255.0 / image_z.max())
+    # np.set_printoptions(threshold=np.nan) # 似乎没有此转换，图像更清晰
+    return image_z
 
 # 均值滤波
 def imgAverageFilter(image, kernel):
@@ -265,96 +252,46 @@ def TestSuanzi():
 
 
 def Testimconv():
-    # x方向的Prewitt算子
-    # suanzi_x = np.array([[-1, 0, 1],
-    #                      [-1, 0, 1],
-    #                      [-1, 0, 1]])
-    #
-    # # y方向的Prewitt算子
-    # suanzi_y = np.array([[-1, -1, -1],
-    #                      [0, 0, 0],
-    #                      [1, 1, 1]])
-
     # x方向的Sobel算子
-    # suanzi_x = np.array([[-1, 0, 1],
-    #                      [-2, 0, 2],
-    #                      [-1, 0, 1]])
-    #
-    # # y方向的Sobel算子
-    # suanzi_y = np.array([[-1, -2, -1],
-    #                      [0, 0, 0],
-    #                      [1, 2, 1]])
+    suanzi_x = np.array([[-1, 0, 1],
+                         [-2, 0, 2],
+                         [-1, 0, 1]])
 
-    # Laplace算子
-    suanzi1 = np.array([[0, 1, 0],
-                        [1, -4, 1],
-                        [0, 1, 0]])
 
-    # Laplace扩展算子
-    suanzi2 = np.array([[1, 1, 1],
-                        [1, -8, 1],
-                        [1, 1, 1]])
+    
 
-    # 打开图像并转化成灰度图像
-    image = data.camera()
-    image = cv2.imread('pika.png', 0)
-
-    # 转化成图像矩阵
+    suanzi_y = np.array([[-1, -2, -1],
+                         [0, 0, 0],
+                         [1, 2, 1]])
+						 
+	# image = cv2.imread('pika.png', 0)
+    image = cv2.imread('./resource/wall.png', 0)
     image_array = np.array(image)
-
-    # 效果不好
-    # 得到x方向矩阵
-    # image_x = imconv(image_array, suanzi_x)
-    #
-    # # 得到y方向矩阵
-    # image_y = imconv(image_array, suanzi_y)
-    #
-    # # 得到梯度矩阵
-    # image_xy = np.sqrt(image_x ** 2 + image_y ** 2)
-    # # 梯度矩阵统一到0-255
-    # image_xy = (255.0 / image_xy.max()) * image_xy
-
-    # 利用signal的convolve计算卷积
-
-
-    image_suanzi1 = signal.convolve2d(image_array, suanzi1, mode="same")
-    image_suanzi2 = signal.convolve2d(image_array, suanzi2, mode="same")
-
-    # 将卷积结果转化成0~255
-    image_suanzi1 = (image_suanzi1 / float(image_suanzi1.max())) * 255
-    image_suanzi2 = (image_suanzi2 / float(image_suanzi2.max())) * 255
+    image_x = imconv(image_array, suanzi_x)
+    image_y = imconv(image_array, suanzi_y)
 
     # 为了使看清边缘检测结果，将大于灰度平均值的灰度变成255(白色)
-    image_suanzi1[image_suanzi1 > image_suanzi1.mean()] = 255
-    image_suanzi2[image_suanzi2 > image_suanzi2.mean()] = 255
+    print("mean:",image_x.mean(),image_y.mean(),image_x.max())
+    # image_y[image_y> image_y.mean()] = 255
+    image_x[image_x>150]= 255
+    image_x[image_x<100]= 255
+    # image_y[image_y> 200] = 255
+    # image_y[image_y< 100] = 255
 
-
-    # 绘出图像
-    # plt.subplot(2, 2, 1)
-    # plt.imshow(image_array, cmap="Greys")
-    # plt.axis("off")
-    # plt.subplot(2, 2, 2)
-    # plt.imshow(image_x, cmap="Greys")
-    # plt.axis("off")
-    # plt.subplot(2, 2, 3)
-    # plt.imshow(image_y, cmap="Greys")
-    # plt.axis("off")
-    # plt.subplot(2, 2, 4)
-    # plt.imshow(image_xy, cmap="Greys")
-    # plt.axis("off")
-    # plt.show()
-
-    # 显示图像
-    plt.subplot(2, 1, 1)
+    plt.subplot(2, 2, 1)
     plt.imshow(image_array, cmap=cm.gray)
     plt.axis("off")
+    plt.subplot(2, 2, 2)
+    plt.hist(image_y.ravel(),256)
+    plt.axis("off")
     plt.subplot(2, 2, 3)
-    plt.imshow(image_suanzi1, cmap=cm.gray)
+    plt.imshow(image_x, cmap=cm.gray)
     plt.axis("off")
     plt.subplot(2, 2, 4)
-    plt.imshow(image_suanzi2, cmap=cm.gray)
+    plt.imshow(image_y, cmap=cm.gray)
     plt.axis("off")
     plt.show()
+
 
 # 高斯算子 降噪
 def Testimconv_jiangzao(image):
@@ -397,7 +334,6 @@ def Testimconv_jiangzao(image):
 
 # TestSharp(data.camera(),sobel_2)
 # TestSuanzi()
-
 
 Testimconv()
 
