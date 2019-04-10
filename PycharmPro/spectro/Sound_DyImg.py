@@ -8,6 +8,8 @@ import pyaudio
 import wave as we
 from scipy.fftpack import fft,ifft
 
+def Map(n, start1, stop1, start2, stop2):
+    return ((n - start1) / (stop1 - start1)) * (stop2 - start2) + start2;
 
 def fjc_record(OutFile="../res/fjc.wav", Seconds=1):
     # 参数定义
@@ -16,33 +18,40 @@ def fjc_record(OutFile="../res/fjc.wav", Seconds=1):
     CHANNELS = 1 # 通过play函数测试得出结论 channels=1 占用2个字节，channels=2占用4个字节
     RATE = 44100
 
-    wavfile = wave.open(r"../res/xiaoyao1.wav", "rb")
+    wavfile = wave.open(r"../res/yusheng1.wav", "rb")
     params = wavfile.getparams()
     print("params:", params)
     framesra, nframes = params[2], params[3]
     print("wavedata:",framesra,nframes)
-    spec_arr = np.array((1024,1024))
+    spec_arr = np.zeros((1,1024))
     spec_test = np.zeros(201)
+    print("spec_arr shpe:",spec_arr.shape)
     for i in range(nframes):
         if i>200:
             break
         datawav = wavfile.readframes(1024)
-        data = np.fromstring(datawav, dtype=np.short)
+        data = np.fromstring(datawav, dtype=np.short)#转成np.array
         time = np.arange(0, nframes) * (1.0 / framesra)
         # plt.plot(data)
         spec = fft(data)
+        # specnew=np.array()
+        # for k in range(spec):
+        #     specnew[k]
         np.set_printoptions(threshold=np.nan)
-        print("data:",type(data),data.shape,"spec:",type(spec),spec.shape)
+        print("data:",data.shape,"spec:",type(spec),spec.shape)
         # spec_arr[i]=spec # error
-        spec_arr = np.concatenate((spec_arr,spec),axis=0)
-        # print("spec_arr spec:",spec_arr)
+        # spec_arr = np.concatenate(([spec_arr],[spec]),axis=0)
+        spec_arr =np.insert(spec_arr,0,[spec],0)
+        print("spec_arr spec:",spec_arr.shape)
         spec_v = np.mean(abs(spec))
         print("spec_arr_min:",spec_v)
         # plt.plot(i,np.mean(abs(spec)))
         spec_test[i]=spec_v
 
     # plt.plot(range(5),[2,7,4,5,6])
-    plt.plot(range(201),spec_test)
+    # plt.plot(range(201),spec_test)
+    # plt.plot(range(202),spec_arr)
+    plt.plot(spec_arr,'o')
     plt.show()
     # print("spec_arr:",spec_arr)
 '''
@@ -185,6 +194,15 @@ def TestAppend():
     d=np.delete(a,1,0)
     print("d==:",d)
 
+
+    spec_arr = np.array((4,3))
+    test_arr= np.zeros((4,3))
+    # test_arr = np.array(4,3)#data type not understood
+    print("spec_arr shape:",spec_arr.shape,spec_arr,test_arr.shape)
+    np.insert(spec_arr,0,[1,1,1,1],0);
+    test_arr=np.insert(test_arr,0,[1,1,1],0);
+    print("spec_arr:",spec_arr)
+    print("test_arr:",test_arr)
     x = np.zeros((0,4))
     # y= np.array([[1,1,1,2]])
     z=np.concatenate((x,[[1,1,1,1]]),0)
@@ -194,5 +212,36 @@ def TestAppend():
     print(np.c_[a,i]);
     # print(np.r_[a,i]); #error
 
-
 # TestAppend()
+
+def TestPlot2DArray():
+    arr = np.zeros((0,6));
+
+    for i in range(4):
+        item=[]
+        for j in range(6):
+           item.append(j+i)
+        print("item:",item)
+        # arr=np.insert(arr,0,[j]*6,0)
+        arr=np.insert(arr,0,item,0)
+
+    print("arr:",arr)
+    plt.plot(arr,'o')
+    # plt.plot(range(5),arr)# 同上
+    plt.show()
+
+    farr0=fft(arr)
+    print("farr0:",farr0)
+
+    farr=np.zeros((0,6))
+    print("farr original:",farr)
+    for a in arr:
+        fa = fft(a)
+        print("fa:",fa)
+        farr=np.insert(farr,0,fa,0)
+    print("farr:",farr)
+
+    plt.plot(farr,'o')
+    plt.show()
+
+# TestPlot2DArray()
