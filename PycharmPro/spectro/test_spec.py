@@ -72,4 +72,4 @@ def GetWavData():
 
     return Z
 
-# GetWavData()
+GetWavData()
