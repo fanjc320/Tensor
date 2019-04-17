@@ -5,14 +5,14 @@ import wave
 import pyaudio
 import test_myspectro_source_test
 
-def GetWavData():
+def GetSpecImg():
     path = "..\..\\res"
     name = "fjc.wav"
     filename = os.path.join(path, name)
     # f = wave.open(filename,'rb')
-    # f = wave.open(r"./res/fjc.wav", 'rb')
+    f = wave.open(r"./res/fjc.wav", 'rb')
     # f = wave.open(r"./res/erquan_part.wav", 'rb')
-    f = wave.open(r"./res/erquan_part_big.wav", 'rb')
+    # f = wave.open(r"./res/erquan_part_big.wav", 'rb')
     # 得到语音参数
     params = f.getparams()
     nchannels, sampwidth, framerate,nframes = params[:4]
@@ -31,11 +31,11 @@ def GetWavData():
     '''绘制语音波形'''
     time = np.arange(0,nframes) * (1.0 / framerate)#计算时间
     time= np.reshape(time,[nframes,1]).T
-    #plt.plot(time[0,:nframes],waveData[0,:nframes],c="b")
+    plt.plot(time[0,:nframes],waveData[0,:nframes],c="b")
     plt.xlabel("time")
     plt.ylabel("amplitude")
     plt.title("Original wave")
-    #plt.show()
+    # plt.show()
 
     # ----------------------------------------------------------------#
     '''绘制语音语谱'''
@@ -56,17 +56,21 @@ def GetWavData():
     overlapSize = int(round(overlapSize))#取整
     print("帧长为{},帧叠为{},傅里叶变换点数为{}".format(framesize,overlapSize,NFFT))
     # spectrum,freqs,ts,fig = plt.specgram(waveData[0],NFFT = NFFT,Fs =framerate,window=np.hanning(M = framesize),
-    #         noverlap=overlapSize,mode='default',scale_by_freq=True,sides='default',scale='dB',xextent=None)#绘制频谱图
-
+    #         noverlap=overlapSize,mode='magnitude',scale_by_freq=True,sides='default',scale='dB',xextent=None)#绘制频谱图
+    #
     spectrum,freqs,ts,im,Z,extent = test_myspectro_source_test.specgram(waveData[0],NFFT = NFFT,Fs =framerate,window=np.hanning(M = framesize),
-            noverlap=overlapSize,mode='default',scale_by_freq=True,sides='default',scale='dB',xextent=None)#绘制频谱图
+            noverlap=overlapSize,mode='magnitude',scale_by_freq=True,sides='default',scale='dB',xextent=None)#绘制频谱图
 
-    print("GetWavData:", Z.shape, extent, min(freqs), max(freqs))  # freqs是等差数列，是一系列连续的频率数组
+    # print("GetWavData:", Z.shape, extent, min(freqs), max(freqs))  # freqs是等差数列，是一系列连续的频率数组
     # Z = Z[-200:-1,:]
     plt.imshow(Z, extent=extent)
     plt.axis('auto') # 有这句，extent才会生效
     plt.show()
 
+    # GetWaveData(Z)
     # return Z
 
-GetWavData()
+GetSpecImg()
+
+def GetWaveData(Z):
+    pass

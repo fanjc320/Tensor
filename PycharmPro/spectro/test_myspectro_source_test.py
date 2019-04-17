@@ -77,6 +77,7 @@ def stride_windows(x, n, noverlap=None, axis=0):
         raise ValueError('only 1-dimensional arrays can be used')
     if n == 1 and noverlap == 0:
         if axis == 0:
+            print("stride_windows np.newaxis:",np.newaxis)
             return x[np.newaxis]
         else:
             return x[np.newaxis].transpose()
@@ -92,9 +93,15 @@ def stride_windows(x, n, noverlap=None, axis=0):
     if axis == 0:
         shape = (n, (x.shape[-1] - noverlap) // step)
         strides = (x.strides[0], step * x.strides[0])
+        print("stride_windows shape strides",shape,strides,np.lib.stride_tricks.as_strided(x, shape=shape, strides=strides).shape)
     else:
         shape = ((x.shape[-1] - noverlap) // step, n)
         strides = (step * x.strides[0], x.strides[0])
+    print("stride_windows x:",x)
+    res = np.lib.stride_tricks.as_strided(x, shape=shape, strides=strides)
+    print("stride_windows as_strided:",res)
+    print("stride_windows reshape:",res.flatten())
+    print("x==res",x==res)
     return np.lib.stride_tricks.as_strided(x, shape=shape, strides=strides)
 
 
@@ -482,7 +489,14 @@ def specgram_mlab(x, NFFT=None, Fs=None, detrend=None, window=None,
         warnings.warn("Only one segment is calculated since parameter NFFT " +
                       "(=%d) >= signal length (=%d)." % (NFFT, len(x)))
 
-    spec, freqs, t = _spectral_helper(x=x, y=None, NFFT=NFFT, Fs=Fs,
+    # spec, freqs, t = _spectral_helper(x=x, y=None, NFFT=NFFT, Fs=Fs,
+    #                                   detrend_func=detrend, window=window,
+    #                                   noverlap=noverlap, pad_to=pad_to,
+    #                                   sides=sides,
+    #                                   scale_by_freq=scale_by_freq,
+    #                                   mode=mode)
+
+    spec, freqs, t = _Unspectral_helper_mag(x=x, y=None, NFFT=NFFT, Fs=Fs,
                                       detrend_func=detrend, window=window,
                                       noverlap=noverlap, pad_to=pad_to,
                                       sides=sides,
@@ -591,7 +605,7 @@ def _spectral_helper(x, y=None, NFFT=None, Fs=None, detrend_func=None,
         scaling_factor = 2.
 
     result = stride_windows(x, NFFT, noverlap, axis=0)
-    # result = detrend(result, detrend_func, axis=0)
+    result = detrend(result, detrend_func, axis=0)
     result, windowVals = apply_window(result, window, axis=0,
                                       return_window=True)
     result = np.fft.fft(result, n=pad_to, axis=0)[:numFreqs, :]
@@ -680,8 +694,7 @@ def _spectral_helper(x, y=None, NFFT=None, Fs=None, detrend_func=None,
 # c = np.lib.stride_tricks.as_strided(a, shape=(4,3), strides=(4,4))
 # print("strides:",c)
 
-
-def _Unspectral_helper(x, y=None, NFFT=None, Fs=None, detrend_func=None,
+def _Unspectral_helper_mag(x, y=None, NFFT=None, Fs=None, detrend_func=None,
                      window=None, noverlap=None, pad_to=None,
                      sides=None, scale_by_freq=None, mode=None):
     '''
@@ -711,6 +724,89 @@ def _Unspectral_helper(x, y=None, NFFT=None, Fs=None, detrend_func=None,
     if NFFT is None:
         NFFT = 256
 
+    # Make sure we're dealing with a numpy array. If y and x were the same
+    # object to start with, keep them that way
+    x = np.asarray(x)
+    if not same_data:
+        y = np.asarray(y)
+
+
+    sides = 'onesided'
+
+    # time = np.arange(0, nframes) * (1.0 / framerate)  # 计算时间
+    # time = np.reshape(time, [nframes, 1]).T
+    # plt.plot(x, c="b")
+    # plt.xlabel("time")
+    # plt.ylabel("amplitude-x")
+    # plt.show()
+
+    if pad_to is None:
+        pad_to = NFFT
+
+    # For real x, ignore the negative frequencies unless told otherwise
+    if sides == 'onesided':#true
+        if pad_to % 2:
+            numFreqs = (pad_to + 1) // 2
+        else:
+            numFreqs = pad_to // 2 + 1
+        scaling_factor = 2.
+
+    result = stride_windows(x, NFFT, noverlap, axis=0)
+    print("x shape:",x.shape,result.shape,np.fft.fft(result, n=pad_to, axis=0).shape)
+    print("pad_to", pad_to, numFreqs, NFFT, noverlap)
+    # result = detrend(result, detrend_func, axis=0)
+    # result, windowVals = apply_window(result, window, axis=0,
+    #                                   return_window=True)
+    print("result before:",result)
+    plt.plot(result)
+    plt.xlabel("result before")
+    plt.show()
+    result = np.fft.fft(result, n=pad_to, axis=0)[:numFreqs, :] # 只取fft变换结果的一半 numFreqs=513
+    res_ifft = np.fft.ifft(result,n=pad_to,axis=0)
+    print("res_ifft",res_ifft)
+    plt.plot(res_ifft)
+    plt.xlabel("res_ifft")
+    plt.show()
+    freqs = np.fft.fftfreq(pad_to, 1 / Fs)[:numFreqs]
+
+    if mode == 'magnitude':
+        # print("windowssum:",np.abs(windowVals).sum())
+        # result = np.abs(result) / np.abs(windowVals).sum()
+        result = np.abs(result) / 512
+
+    print("mode====:",mode,sides)
+
+    t = np.arange(NFFT / 2, len(x) - NFFT / 2 + 1, NFFT - noverlap) / Fs
+
+    if not pad_to % 2:
+        # get the last value correctly, it is negative otherwise
+        freqs[-1] *= -1
+        print("not pad_to % 2 11:")
+
+    # print("_spectral_helper freqs:",freqs) # 等差数列0-22050, 43 为差,共512个
+    return result, freqs, t
+
+
+def _Unspectral_helper(x, y=None, NFFT=None, Fs=None, detrend_func=None,
+                     window=None, noverlap=None, pad_to=None,
+                     sides=None, scale_by_freq=None, mode=None):
+    if y is None:
+        # if y is None use x for y
+        same_data = True
+    else:
+        same_data = y is x
+
+    if Fs is None:
+        Fs = 2
+    if noverlap is None:
+        noverlap = 0
+    # if detrend_func is None:
+    # detrend_func = detrend_none
+
+    # if NFFT is set to None use the whole signal
+    if NFFT is None:
+        NFFT = 256
+
     if mode is None or mode == 'default':
         mode = 'psd'
 
@@ -720,11 +816,7 @@ def _Unspectral_helper(x, y=None, NFFT=None, Fs=None, detrend_func=None,
     if not same_data:
         y = np.asarray(y)
 
-    if sides is None or sides == 'default':
-        if np.iscomplexobj(x):
-            sides = 'twosided'
-        else:
-            sides = 'onesided'
+    sides = 'onesided'
 
     # zero pad x and y up to NFFT if they are shorter than NFFT
     if len(x) < NFFT:
@@ -746,20 +838,21 @@ def _Unspectral_helper(x, y=None, NFFT=None, Fs=None, detrend_func=None,
         scale_by_freq = True
 
     # For real x, ignore the negative frequencies unless told otherwise
-    if sides == 'twosided':
-        numFreqs = pad_to
-        if pad_to % 2:
-            freqcenter = (pad_to - 1) // 2 + 1
-        else:
-            freqcenter = pad_to // 2
-        scaling_factor = 1.
-    elif sides == 'onesided':
+    if sides == 'onesided':
         if pad_to % 2:
             numFreqs = (pad_to + 1) // 2
         else:
             numFreqs = pad_to // 2 + 1
         scaling_factor = 2.
+    # if sides == 'twosided':
+    #     numFreqs = pad_to
+    #     if pad_to % 2:
+    #         freqcenter = (pad_to - 1)//2 + 1
+    #     else:
+    #         freqcenter = pad_to//2
+    #     scaling_factor = 1.
 
+    print("x.shape:",x.shape,noverlap)
     result = stride_windows(x, NFFT, noverlap, axis=0)
     # result = detrend(result, detrend_func, axis=0)
     result, windowVals = apply_window(result, window, axis=0,
@@ -767,20 +860,10 @@ def _Unspectral_helper(x, y=None, NFFT=None, Fs=None, detrend_func=None,
     result = np.fft.fft(result, n=pad_to, axis=0)[:numFreqs, :]
     freqs = np.fft.fftfreq(pad_to, 1 / Fs)[:numFreqs]
 
-    if not same_data:
-        # if same_data is False, mode must be 'psd'
-        resultY = stride_windows(y, NFFT, noverlap)
-        resultY = detrend(resultY, detrend_func, axis=0)
-        resultY = apply_window(resultY, window, axis=0)
-        resultY = np.fft.fft(resultY, n=pad_to, axis=0)[:numFreqs, :]
-        result = np.conj(result) * resultY
-    elif mode == 'psd':
-        result = np.conj(result) * result
-    elif mode == 'magnitude':
-        result = np.abs(result) / np.abs(windowVals).sum()
-
     if mode == 'psd':
-
+        print("result:",result)
+        print("conj_result:",np.conj(result))
+        result = np.conj(result) * result
         # Also include scaling factors for one-sided densities and dividing by
         # the sampling frequency, if desired. Scale everything, except the DC
         # component and the NFFT/2 component:
@@ -798,27 +881,202 @@ def _Unspectral_helper(x, y=None, NFFT=None, Fs=None, detrend_func=None,
         # has units of dB/Hz and can be integrated by the plotted frequency
         # values. Perform the same scaling here.
         if scale_by_freq:
+            '''
             result /= Fs
             # Scale the spectrum by the norm of the window to compensate for
             # windowing loss; see Bendat & Piersol Sec 11.5.2.
             result /= (np.abs(windowVals) ** 2).sum()
+            print("wwww:",type(windowVals),Fs)
+            print("----",(np.asarray([1,2,3]) )**2)
+            print("windowVals:",windowVals,np.abs(windowVals),"\n",np.abs(windowVals) ** 2,"\n",(np.abs(windowVals) ** 2).sum())
+            '''
         else:
             # In this case, preserve power in the segment, not amplitude
             result /= np.abs(windowVals).sum() ** 2
 
     t = np.arange(NFFT / 2, len(x) - NFFT / 2 + 1, NFFT - noverlap) / Fs
 
-    if sides == 'twosided':
-        # center the frequency range at zero
-        freqs = np.concatenate((freqs[freqcenter:], freqs[:freqcenter]))
-        result = np.concatenate((result[freqcenter:, :],
-                                 result[:freqcenter, :]), 0)
-    elif not pad_to % 2:
+    # if sides == 'twosided':
+    #     # center the frequency range at zero
+    #     freqs = np.concatenate((freqs[freqcenter:], freqs[:freqcenter]))
+    #     result = np.concatenate((result[freqcenter:, :],
+    #                              result[:freqcenter, :]), 0)
+
+    if not pad_to % 2:
         # get the last value correctly, it is negative otherwise
         freqs[-1] *= -1
 
-    # we unwrap the phase here to handle the onesided vs. twosided case
-    if mode == 'phase':
-        result = np.unwrap(result, axis=0)
     # print("_spectral_helper freqs:",freqs) # 等差数列0-22050, 43 为差,共512个
     return result, freqs, t
+
+def TestStrideWindows():
+    # x = [1, 2, 3, 4, 5, 6, 7, 8];
+    # x = [1,2,3,4,5,6,7,8,9];
+    x = [1, 2, 3, 4, 5, 6, 7, 8, 9,10];
+    x=np.asarray(x)
+    print("x.shape:",x.shape)
+    result = stride_windows(x, 3, 0, axis=0)
+    print("result:", result);
+    window=np.hanning(M=3)
+    result, windowVals = apply_Unwindow(result, window, axis=0,
+                                      return_window=True)
+    print("result apply_window:",result);
+
+def apply_Unwindow(x, window, axis=0, return_window=None):
+    '''
+    Apply the given window to the given 1D or 2D array along the given axis.
+
+    Parameters
+    ----------
+    x : 1D or 2D array or sequence
+        Array or sequence containing the data.
+
+    window : function or array.
+        Either a function to generate a window or an array with length
+        *x*.shape[*axis*]
+
+    axis : integer
+        The axis over which to do the repetition.
+        Must be 0 or 1.  The default is 0
+
+    return_window : bool
+        If true, also return the 1D values of the window that was applied
+    '''
+
+    result, windowVals = apply_window(x, window, axis=0,
+                                      return_window=True)
+    print("x",x,x.ndim)
+    print("result old:",result)
+    print("window:",windowVals)
+
+    # print("x huanyuan:",result/windowVals) # 'NoneType' object is not iterable
+
+    x = np.asarray(x)
+
+    if x.ndim < 1 or x.ndim > 2:
+        raise ValueError('only 1D or 2D arrays can be used')
+    if axis + 1 > x.ndim:
+        raise ValueError('axis(=%s) out of bounds' % axis)
+
+    xshape = list(x.shape)
+    xshapetarg = xshape.pop(axis)
+
+    if cbook.iterable(window):
+        if len(window) != xshapetarg:
+            raise ValueError('The len(window) must be the same as the shape '
+                             'of x for the chosen axis')
+        windowVals = window
+        print("unwindow-----00")
+    else:
+        windowVals = window(np.ones(xshapetarg, dtype=x.dtype))
+        print("unwindow-----11")
+
+    if x.ndim == 1:
+        if return_window:
+            print("unwindow-----22")
+            return windowVals * x, windowVals
+        else:
+            print("unwindow-----33")
+            return windowVals * x
+
+    # xshapeother = xshape.pop()
+    #
+    # otheraxis = (axis + 1) % 2
+    #
+    # windowValsRep = stride_repeat(windowVals, xshapeother, axis=otheraxis)
+    #
+    # if return_window:
+    #     print("unwindow ------ return ")
+    #     return windowValsRep * x, windowVals
+    # else:
+    #     print("unwindow-----44")
+    #     return windowValsRep * x
+
+def Unstride_windows(x, n, noverlap=None, axis=0):
+    '''
+    Get all windows of x with length n as a single array,
+    using strides to avoid data duplication.
+
+    .. warning::
+
+        It is not safe to write to the output array.  Multiple
+        elements may point to the same piece of memory,
+        so modifying one value may change others.
+
+    Parameters
+    ----------
+    x : 1D array or sequence
+        Array or sequence containing the data.
+
+    n : integer
+        The number of data points in each window.
+
+    noverlap : integer
+        The overlap between adjacent windows.
+        Default is 0 (no overlap)
+
+    axis : integer
+        The axis along which the windows will run.
+
+    References
+    ----------
+    `stackoverflow: Rolling window for 1D arrays in Numpy?
+    <http://stackoverflow.com/a/6811241>`_
+    `stackoverflow: Using strides for an efficient moving average filter
+    <http://stackoverflow.com/a/4947453>`_
+    '''
+    if noverlap is None:
+        noverlap = 0
+
+    if noverlap >= n:
+        raise ValueError('noverlap must be less than n')
+    if n < 1:
+        raise ValueError('n cannot be less than 1')
+
+    x = np.asarray(x)
+
+    if x.ndim != 1:
+        raise ValueError('only 1-dimensional arrays can be used')
+    if n == 1 and noverlap == 0:
+        if axis == 0:
+            return x[np.newaxis]
+        else:
+            return x[np.newaxis].transpose()
+    if n > x.size:
+        raise ValueError('n cannot be greater than the length of x')
+
+    # np.lib.stride_tricks.as_strided easily leads to memory corruption for
+    # non integer shape and strides, i.e. noverlap or n. See #3845.
+    noverlap = int(noverlap)
+    n = int(n)
+
+    step = n - noverlap
+    if axis == 0:
+        shape = (n, (x.shape[-1] - noverlap) // step)
+        strides = (x.strides[0], step * x.strides[0])
+    else:
+        shape = ((x.shape[-1] - noverlap) // step, n)
+        strides = (step * x.strides[0], x.strides[0])
+    return np.lib.stride_tricks.as_strided(x, shape=shape, strides=strides)
+
+# TestStrideWindows()
+
+def TestUnStride():
+    sudoku = np.array(
+        [2, 8, 7, 1, 6, 5, 9, 4, 3,
+        9, 5, 4, 7, 3, 2, 1, 6, 8,
+        6, 1, 3, 8, 4, 9, 7, 5, 2,
+        8, 7, 9, 6, 5, 1, 2, 3, 4,
+        4, 2, 1, 3, 9, 8, 6, 7, 5,
+        3, 6, 5, 4, 2, 7, 8, 9, 1,
+        1, 9, 8, 5, 7, 3, 4, 2, 6,
+        5, 4, 2, 9, 1, 6, 3, 8, 7]
+    )
+
+    shape = (3,24)
+    strides = sudoku.itemsize * np.array([2,2])
+    squares = np.lib.stride_tricks.as_strided(sudoku, shape=shape, strides=strides)
+    print(squares)
+
+
+TestUnStride()
