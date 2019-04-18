@@ -137,3 +137,8 @@ def TestShow():
 	# show(x, y) 
 
 # TestShow()
+
+
+def logFile(fout,content):
+    fout= open(fout,'w',encoding='utf8');
+    print(content, file=fout)

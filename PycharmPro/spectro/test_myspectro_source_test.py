@@ -3,6 +3,7 @@ import matplotlib.cbook as cbook
 import matplotlib.cm as cm
 from matplotlib.path import Path
 import matplotlib.pyplot as plt
+from Common.common import logFile
 # from skimage import data, filters
 # import test_img_sharp
 # import test_img_sharp1
@@ -90,19 +91,25 @@ def stride_windows(x, n, noverlap=None, axis=0):
     n = int(n)
 
     step = n - noverlap
+    np.set_printoptions(threshold=np.nan)
     if axis == 0:
         shape = (n, (x.shape[-1] - noverlap) // step)
         strides = (x.strides[0], step * x.strides[0])
-        print("stride_windows shape strides",shape,strides,np.lib.stride_tricks.as_strided(x, shape=shape, strides=strides).shape)
+        print("stride_windows ddd:",n,noverlap,step,x.shape,
+              "\nstrides:",x.strides,x.strides[0],
+              "\ntype:",type(x[0]),x.dtype)
+        res = np.lib.stride_tricks.as_strided(x, shape=shape, strides=strides)
+        print("stride_windows shape && strides!!:",shape,strides,
+              "\nshape:",x.shape,res.shape,
+              "\ndtype:",x.dtype,res.dtype)
     else:
         shape = ((x.shape[-1] - noverlap) // step, n)
         strides = (step * x.strides[0], x.strides[0])
-    print("stride_windows x:",x)
-    res = np.lib.stride_tricks.as_strided(x, shape=shape, strides=strides)
-    print("stride_windows as_strided:",res)
-    print("stride_windows reshape:",res.flatten())
-    print("x==res",x==res)
+    # logFile("./x.txt",x[:1030])
+    # logFile("./res.txt",res.transpose().flatten()[:1030])
+    # print("x==res",x==res.transpose().flatten())
     return np.lib.stride_tricks.as_strided(x, shape=shape, strides=strides)
+
 
 
 def stride_repeat(x, n, axis=0):
@@ -730,7 +737,6 @@ def _Unspectral_helper_mag(x, y=None, NFFT=None, Fs=None, detrend_func=None,
     if not same_data:
         y = np.asarray(y)
 
-
     sides = 'onesided'
 
     # time = np.arange(0, nframes) * (1.0 / framerate)  # 计算时间
@@ -757,13 +763,20 @@ def _Unspectral_helper_mag(x, y=None, NFFT=None, Fs=None, detrend_func=None,
     # result = detrend(result, detrend_func, axis=0)
     # result, windowVals = apply_window(result, window, axis=0,
     #                                   return_window=True)
-    print("result before:",result)
     plt.plot(result)
     plt.xlabel("result before")
     plt.show()
-    result = np.fft.fft(result, n=pad_to, axis=0)[:numFreqs, :] # 只取fft变换结果的一半 numFreqs=513
-    res_ifft = np.fft.ifft(result,n=pad_to,axis=0)
-    print("res_ifft",res_ifft)
+    oldresult = result
+    result = np.fft.fft(result, n=pad_to, axis=0)[:numFreqs, :] #np.fft.fft(result, n=pad_to, axis=0).shape(1024,215) 只取fft变换结果的一半 numFreqs=513
+    temp =np.fft.fft(result, n=pad_to, axis=0)
+    res_ifft = np.fft.ifft(temp,n=pad_to,axis=0)
+    print("res_ifft==oldresult:",res_ifft==oldresult)
+    logFile("./res_ifft.txt",res_ifft)
+    logFile("./oldresult.txt",oldresult)
+    # x_revert = Unstride_windows(res_ifft,NFFT,noverlap,axis=0)
+    # x_revert = result.transpose().flatten() # 和stride_windows是完全可逆的过程
+    # print("res_ifft",res_ifft)
+    # print("x_revert==x:",x_revert==x)
     plt.plot(res_ifft)
     plt.xlabel("res_ifft")
     plt.show()
@@ -992,7 +1005,7 @@ def apply_Unwindow(x, window, axis=0, return_window=None):
     #     print("unwindow-----44")
     #     return windowValsRep * x
 
-def Unstride_windows(x, n, noverlap=None, axis=0):
+def Unstride_windows(strided_res, n, noverlap=None, axis=0):
     '''
     Get all windows of x with length n as a single array,
     using strides to avoid data duplication.
@@ -1033,17 +1046,7 @@ def Unstride_windows(x, n, noverlap=None, axis=0):
     if n < 1:
         raise ValueError('n cannot be less than 1')
 
-    x = np.asarray(x)
 
-    if x.ndim != 1:
-        raise ValueError('only 1-dimensional arrays can be used')
-    if n == 1 and noverlap == 0:
-        if axis == 0:
-            return x[np.newaxis]
-        else:
-            return x[np.newaxis].transpose()
-    if n > x.size:
-        raise ValueError('n cannot be greater than the length of x')
 
     # np.lib.stride_tricks.as_strided easily leads to memory corruption for
     # non integer shape and strides, i.e. noverlap or n. See #3845.
@@ -1051,32 +1054,66 @@ def Unstride_windows(x, n, noverlap=None, axis=0):
     n = int(n)
 
     step = n - noverlap
+    # np.set_printoptions(threshold=np.nan)
     if axis == 0:
-        shape = (n, (x.shape[-1] - noverlap) // step)
-        strides = (x.strides[0], step * x.strides[0])
-    else:
-        shape = ((x.shape[-1] - noverlap) // step, n)
-        strides = (step * x.strides[0], x.strides[0])
-    return np.lib.stride_tricks.as_strided(x, shape=shape, strides=strides)
+        x = strided_res.transpose().flatten()
+    # logFile("./x.txt",x[:1030])
+    # logFile("./res.txt",strided_res.transpose().flatten()[:1030])
+    print("x==res",x==strided_res)
+    return x
 
 # TestStrideWindows()
 
 def TestUnStride():
-    sudoku = np.array(
-        [2, 8, 7, 1, 6, 5, 9, 4, 3,
-        9, 5, 4, 7, 3, 2, 1, 6, 8,
-        6, 1, 3, 8, 4, 9, 7, 5, 2,
-        8, 7, 9, 6, 5, 1, 2, 3, 4,
-        4, 2, 1, 3, 9, 8, 6, 7, 5,
-        3, 6, 5, 4, 2, 7, 8, 9, 1,
-        1, 9, 8, 5, 7, 3, 4, 2, 6,
-        5, 4, 2, 9, 1, 6, 3, 8, 7]
-    )
 
-    shape = (3,24)
+    sudoku = np.array(
+        [2, 8, 7, 1, 6, 5, 9, 4, 3, 9, 5, 4, 7, 3, 2, 1, 6, 8]#,
+        # 6, 1, 3, 8, 4, 9, 7, 5, 2,
+        # 8, 7, 9, 6, 5, 1, 2, 3, 4,
+        # 4, 2, 1, 3, 9, 8, 6, 7, 5,
+        # 3, 6, 5, 4, 2, 7, 8, 9, 1,
+        # 1, 9, 8, 5, 7, 3, 4, 2, 6,
+        # 5, 4, 2, 9, 1, 6, 3, 8, 7]
+        ,dtype=np.int8
+    )
+    # print(sudoku,sudoku.shape)
+    # sudoku = sudoku.transpose() #不变
+    # print(sudoku,sudoku.shape)
+
+    shape = (6,3)
     strides = sudoku.itemsize * np.array([2,2])
+    print("strides:",strides,sudoku.itemsize,sudoku.shape,sudoku.strides)
+    # strides=[sudoku.strides[0],1] # 这里是关键
+    strides = [1, 3]  # [a,b]这里是关键 每a个元素开始一个节点，每次跳过b个元素，如果b比较大，可能有重复元素，即下一个节点在上一个节点的内部
+    # shape = (c,d),而d决定了节点的长度，如果要节点间不重合 则a==d
     squares = np.lib.stride_tricks.as_strided(sudoku, shape=shape, strides=strides)
     print(squares)
+
+    revert_squares = squares.transpose().flatten();
+    print(revert_squares)
+
+    shape = (3, 6)
+    squares = np.lib.stride_tricks.as_strided(sudoku, shape=shape, strides=strides)
+    print(squares)
+
+    # 主要测试flat
+    '''
+    x = np.array([[1, 2, 3],
+                  [4, 5, 6],
+                  [7, 8, 9]], dtype=np.int8)
+    y = np.array([[1,1,1],
+                  [2,2,1],
+                  [3,3,3]])
+    print("x.strides:",x.strides,y.strides)
+    # 步伐 大小与dtype有关
+    x.strides  # (3, 1)
+    print("ddddd ",type(x.strides), x.strides*np.array([1,2]))
+    byte_offset = sum(x.strides * np.array([1, 2]))  # 步伐*想要查找的位置
+    print("x.flat",x.flat)
+    x.flat[byte_offset]  # 6
+    x[1, 2]
+    '''
+
 
 
 TestUnStride()

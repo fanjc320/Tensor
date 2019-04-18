@@ -58,8 +58,17 @@ def GetSpecImg():
     # spectrum,freqs,ts,fig = plt.specgram(waveData[0],NFFT = NFFT,Fs =framerate,window=np.hanning(M = framesize),
     #         noverlap=overlapSize,mode='magnitude',scale_by_freq=True,sides='default',scale='dB',xextent=None)#绘制频谱图
     #
+
+    ''' #原来的mode和noverlap
+    spectrum, freqs, ts, im, Z, extent = test_myspectro_source_test.specgram(waveData[0], NFFT=NFFT, Fs=framerate,
+                                                                             window=np.hanning(M=framesize),
+                                                                             noverlap=overlapSize, mode='default',
+                                                                             scale_by_freq=True, sides='default',
+                                                                             scale='dB', xextent=None)  # 绘制频谱图
+    '''
+
     spectrum,freqs,ts,im,Z,extent = test_myspectro_source_test.specgram(waveData[0],NFFT = NFFT,Fs =framerate,window=np.hanning(M = framesize),
-            noverlap=overlapSize,mode='magnitude',scale_by_freq=True,sides='default',scale='dB',xextent=None)#绘制频谱图
+            noverlap=0,mode='magnitude',scale_by_freq=True,sides='default',scale='dB',xextent=None)#绘制频谱图
 
     # print("GetWavData:", Z.shape, extent, min(freqs), max(freqs))  # freqs是等差数列，是一系列连续的频率数组
     # Z = Z[-200:-1,:]
