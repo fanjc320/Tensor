@@ -17,7 +17,7 @@ def getSpectrum(filename, window_length_ms, window_shift_times):
     nchannels, sampwidth, framerate, wav_length = params[:4]
     # 获取音频文件内的数据，不知道为啥获取到的竟然是个字符串，还需要在numpy中转换成short类型的数据
     str_data = wav_file.readframes(wav_length)
-    wave_data = numpy.fromstring(str_data, dtype=numpy.short)
+    wave_data = np.fromstring(str_data, dtype=np.short)
     # 将窗长从毫秒转换为点数
     window_length = framerate * window_length_ms / 1000
     window_shift = int(window_length * window_shift_times)
@@ -27,7 +27,7 @@ def getSpectrum(filename, window_length_ms, window_shift_times):
     window_length = math.floor(window_length)
     a = math.floor(window_length/2)
     # spec = numpy.zeros((window_length/2, nframe))
-    spec = numpy.zeros((a, nframe))
+    spec = np.zeros((a, nframe))
 
     print("max wavedata:",max(wave_data))
     maxlog = 0;
@@ -37,14 +37,14 @@ def getSpectrum(filename, window_length_ms, window_shift_times):
         end = start + window_length
         # [:window_length/2]是指只留下前一半的fft分量
         # spec[:, i] = numpy.log(numpy.abs(numpy.fft.fft(wave_data[start:end])))[:window_length/2]
-        r_fft = numpy.abs(numpy.fft.fft(wave_data[start:end]))
-        spec[:, i] = 10*numpy.log10(r_fft)[:window_length // 2]
+        r_fft = np.abs(np.fft.fft(wave_data[start:end]))
+        spec[:, i] = 10*np.log10(r_fft)[:window_length // 2]
         maxlog = max(maxlog,max(spec[:,i]))
 
     for i in range(20000):
-        print(10*numpy.log10(i))
+        print(10*np.log10(i))
     print("maxlog:",maxlog)
-    print("spec shape:",numpy.shape(spec))
+    print("spec shape:",np.shape(spec))
     return spec
 
 

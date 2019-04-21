@@ -27,16 +27,13 @@ def fjc_record(OutFile="../res/fjc.wav", Seconds=1):
     spec_test = np.zeros(201)
     print("spec_arr shpe:",spec_arr.shape)
     for i in range(nframes):
-        if i>200:
+        if i>0:
             break
         datawav = wavfile.readframes(1024)
         data = np.fromstring(datawav, dtype=np.short)#转成np.array
         time = np.arange(0, nframes) * (1.0 / framesra)
         # plt.plot(data)
         spec = fft(data)
-        # specnew=np.array()
-        # for k in range(spec):
-        #     specnew[k]
         np.set_printoptions(threshold=np.nan)
         print("data:",data.shape,"spec:",type(spec),spec.shape)
         # spec_arr[i]=spec # error
@@ -47,11 +44,14 @@ def fjc_record(OutFile="../res/fjc.wav", Seconds=1):
         print("spec_arr_min:",spec_v)
         # plt.plot(i,np.mean(abs(spec)))
         spec_test[i]=spec_v
+        spec_t = spec.transpose()
+        print("spec.shape:",spec.shape,spec_t)
+        plt.plot(spec_t)
 
     # plt.plot(range(5),[2,7,4,5,6])
     # plt.plot(range(201),spec_test)
     # plt.plot(range(202),spec_arr)
-    plt.plot(spec_arr,'o')
+    # plt.plot(spec_arr,'o')
     plt.show()
     # print("spec_arr:",spec_arr)
 '''
@@ -214,6 +214,7 @@ def TestAppend():
 
 # TestAppend()
 
+
 def TestPlot2DArray():
     arr = np.zeros((0,6));
 
@@ -241,6 +242,9 @@ def TestPlot2DArray():
         farr=np.insert(farr,0,fa,0)
     print("farr:",farr)
 
+    print("farr.shape:",farr.shape)
+    farr_t= farr.transpose()
+    print("farr_t:",farr_t)
     plt.plot(farr,'o')
     plt.show()
 

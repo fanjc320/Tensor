@@ -42,10 +42,10 @@ def wavread(filename):
     return waveData
 
 
-filepath = "./"  # 添加路径
+filepath = "./res/"  # 添加路径
 filename = "yusheng.wav"  # 得到文件夹下的所有文件名称
 f = wave.open(filepath + filename, 'rb')
-data = wavread(filename)
+data = wavread(filepath+filename)
 nw = 512
 inc = 128
 winfunc = signal.hamming(nw)
@@ -146,16 +146,16 @@ def draw_heatmap(data, xlabels, ylabels):
                 vmax = j
             if j < vmin:
                 vmin = j
-    #map = ax.imshow(data, interpolation='nearest', cmap=cmap, aspect='auto', vmin=vmin, vmax=vmax)
+    map = ax.imshow(data, interpolation='nearest', cmap=cmap, aspect='auto', vmin=vmin, vmax=vmax)
     cb = plt.colorbar(mappable=map, cax=None, ax=None, shrink=0.5)
-    #plt.show()
+    plt.show()
 
 
 a = np.random.rand(10, 10)
 print(a)
 xlabels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J']
 ylabels = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']
-# draw_heatmap(a, xlabels, ylabels)
+draw_heatmap(a, xlabels, ylabels)
 
 
 

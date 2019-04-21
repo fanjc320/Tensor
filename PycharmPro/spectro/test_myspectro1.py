@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 
-filepath = "./"  # 添加路径
+filepath = "./res/"  # 添加路径
 filename = "yusheng.wav"  # 得到文件夹下的所有文件名称
 f = wave.open(filepath + filename, 'rb')
 params = f.getparams()

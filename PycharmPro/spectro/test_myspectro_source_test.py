@@ -382,43 +382,28 @@ def specgram_ax(x, NFFT=None, Fs=None, Fc=None, detrend=None,
             print("--------------")
     else:
         raise ValueError('Unknown scale %s', scale)
-    # print("scale:",scale)
-    Z = Z[0:100]
-    # print("z:",Z)
 
-    minz = np.min(Z)
-    maxz = np.max(Z)
-    # gap = maxz-minz
-    # threashold = (minz-maxz)*0.8 # 阈值，超过显示空白
-    Z = np.array(Z)
-
-    print("minz:", minz, "maxz:", maxz)
-    # print("-z:", Z)
-    Z = maxminnorm(Z)
-    Z = Z * 100
-    minz = np.min(Z)
-    maxz = np.max(Z)
-    print("after minz:", minz, "maxz:", maxz)
-    plt.yticks(np.arange(1, 1000, 100))
     Z = np.flipud(Z)
-    # Z = filters.sobel(Z)
-    # Z = test_img_sharp.TestSharp(Z,test_img_sharp.sobel_1)
-    # Z = test_img_sharp.Testimconv_jiangzao(Z)
 
     if xextent is None:
         # padding is needed for first and last segment:
         pad_xextent = (NFFT - noverlap) / Fs / 2
         xextent = np.min(t) - pad_xextent, np.max(t) + pad_xextent
+        print("pad_xextent:",pad_xextent,np.min(t),np.max(t))
     xmin, xmax = xextent
     freqs += Fc
     extent = xmin, xmax, freqs[0], freqs[-1]
-    # im = self.imshow(Z, cmap, extent=extent, vmin=vmin, vmax=vmax,
-    #                 **kwargs)
-    im = plt.imshow(Z, cmap='Greys', vmin=0, vmax=100)
 
-    print("Z:", np.array(Z).shape)
-    # self.axis('auto')
-    return spec, freqs, t, im,Z
+    print("===z.shape:", Z.shape, extent, min(freqs), max(freqs),cmap)  # freqs是等差数列，是一系列连续的频率数组
+
+    # Z = Z[-200:-1,:]
+    # im = plt.imshow(Z, cmap, extent=extent, vmin=vmin, vmax=vmax,
+    #                 **kwargs)# vmin,和vmax仅限制了图像颜色深度范围,没有太大意义
+    # im = plt.imshow(Z, extent=extent)
+
+    plt.axis('auto')
+    im=0
+    return spec, freqs, t, im,Z,extent
 
 
 # mlab.py
@@ -598,6 +583,176 @@ def _spectral_helper(x, y=None, NFFT=None, Fs=None, detrend_func=None,
         else:
             freqcenter = pad_to // 2
         scaling_factor = 1.
+    elif sides == 'onesided':#true
+        if pad_to % 2:
+            numFreqs = (pad_to + 1) // 2
+        else:
+            numFreqs = pad_to // 2 + 1
+        scaling_factor = 2.
+
+    result = stride_windows(x, NFFT, noverlap, axis=0)
+    # result = detrend(result, detrend_func, axis=0)
+    result, windowVals = apply_window(result, window, axis=0,
+                                      return_window=True)
+    result = np.fft.fft(result, n=pad_to, axis=0)[:numFreqs, :]
+    freqs = np.fft.fftfreq(pad_to, 1 / Fs)[:numFreqs]
+
+    if not same_data:
+        # if same_data is False, mode must be 'psd'
+        resultY = stride_windows(y, NFFT, noverlap)
+        resultY = detrend(resultY, detrend_func, axis=0)
+        resultY = apply_window(resultY, window, axis=0)
+        resultY = np.fft.fft(resultY, n=pad_to, axis=0)[:numFreqs, :]
+        result = np.conj(result) * resultY
+    elif mode == 'psd':
+        result = np.conj(result) * result
+        print("-------111-------")
+    elif mode == 'magnitude':
+        result = np.abs(result) / np.abs(windowVals).sum()
+    elif mode == 'angle' or mode == 'phase':
+        # we unwrap the phase later to handle the onesided vs. twosided case
+        result = np.angle(result)
+    elif mode == 'complex':
+        result /= np.abs(windowVals).sum()
+
+    print("mode====:",mode,sides)
+
+    if mode == 'psd':
+
+        # Also include scaling factors for one-sided densities and dividing by
+        # the sampling frequency, if desired. Scale everything, except the DC
+        # component and the NFFT/2 component:
+
+        # if we have a even number of frequencies, don't scale NFFT/2
+        if not NFFT % 2:
+            slc = slice(1, -1, None)
+        # if we have an odd number, just don't scale DC
+        else:
+            slc = slice(1, None, None)
+
+        result[slc] *= scaling_factor
+
+        # MATLAB divides by the sampling frequency so that density function
+        # has units of dB/Hz and can be integrated by the plotted frequency
+        # values. Perform the same scaling here.
+        if scale_by_freq: # true
+            result /= Fs
+            # Scale the spectrum by the norm of the window to compensate for
+            # windowing loss; see Bendat & Piersol Sec 11.5.2.
+            result /= (np.abs(windowVals) ** 2).sum()
+            print("scale_by_freq 00:",scale_by_freq)
+        else:
+            # In this case, preserve power in the segment, not amplitude
+            result /= np.abs(windowVals).sum() ** 2
+            print("scale_by_freq 11:", scale_by_freq)
+
+    t = np.arange(NFFT / 2, len(x) - NFFT / 2 + 1, NFFT - noverlap) / Fs
+
+    if sides == 'twosided':
+        # center the frequency range at zero
+        freqs = np.concatenate((freqs[freqcenter:], freqs[:freqcenter]))
+        result = np.concatenate((result[freqcenter:, :],
+                                 result[:freqcenter, :]), 0)
+        print("not pad_to % 2 00:")
+    elif not pad_to % 2:
+        # get the last value correctly, it is negative otherwise
+        freqs[-1] *= -1
+        print("not pad_to % 2 11:")
+
+    # we unwrap the phase here to handle the onesided vs. twosided case
+    if mode == 'phase':
+        result = np.unwrap(result, axis=0)
+    # print("_spectral_helper freqs:",freqs) # 等差数列0-22050, 43 为差,共512个
+    return result, freqs, t
+
+# test
+# def rolling_window(a, window):
+# shape = a.shape[:-1] + (a.shape[-1] - window + 1, window)
+##shape:(4,3)  a.shape:(6,)   a.shape[:-1]:()   a.shape[-1]:6
+# print("shape",shape,a.shape,a.shape[:-1],a.shape[-1])
+# strides = a.strides + (a.strides[-1],)
+# print("strides:",a.strides,strides)
+# return np.lib.stride_tricks.as_strided(a, shape=shape, strides=strides)
+
+# a = np.array([1, 12, 3, 4, 5, 6]);
+# b = rolling_window(a, 3)
+# print("rolling_window:",b)
+# c = np.lib.stride_tricks.as_strided(a, shape=(4,3), strides=(4,4))
+# print("strides:",c)
+
+
+def _Unspectral_helper(x, y=None, NFFT=None, Fs=None, detrend_func=None,
+                     window=None, noverlap=None, pad_to=None,
+                     sides=None, scale_by_freq=None, mode=None):
+    '''
+    This is a helper function that implements the commonality between the
+    psd, csd, spectrogram and complex, magnitude, angle, and phase spectrums.
+    It is *NOT* meant to be used outside of mlab and may change at any time.
+    '''
+    if y is None:
+        # if y is None use x for y
+        same_data = True
+    else:
+        # The checks for if y is x are so that we can use the same function to
+        # implement the core of psd(), csd(), and spectrogram() without doing
+        # extra calculations.  We return the unaveraged Pxy, freqs, and t.
+        same_data = y is x
+
+    if Fs is None:
+        Fs = 2
+    if noverlap is None:
+        noverlap = 0
+    # if detrend_func is None:
+    # detrend_func = detrend_none
+    if window is None:
+        window = window_hanning
+
+    # if NFFT is set to None use the whole signal
+    if NFFT is None:
+        NFFT = 256
+
+    if mode is None or mode == 'default':
+        mode = 'psd'
+
+    # Make sure we're dealing with a numpy array. If y and x were the same
+    # object to start with, keep them that way
+    x = np.asarray(x)
+    if not same_data:
+        y = np.asarray(y)
+
+    if sides is None or sides == 'default':
+        if np.iscomplexobj(x):
+            sides = 'twosided'
+        else:
+            sides = 'onesided'
+
+    # zero pad x and y up to NFFT if they are shorter than NFFT
+    if len(x) < NFFT:
+        n = len(x)
+        x = np.resize(x, (NFFT,))
+        x[n:] = 0
+
+    if not same_data and len(y) < NFFT:
+        n = len(y)
+        y = np.resize(y, (NFFT,))
+        y[n:] = 0
+
+    if pad_to is None:
+        pad_to = NFFT
+
+    if mode != 'psd':
+        scale_by_freq = False
+    elif scale_by_freq is None:
+        scale_by_freq = True
+
+    # For real x, ignore the negative frequencies unless told otherwise
+    if sides == 'twosided':
+        numFreqs = pad_to
+        if pad_to % 2:
+            freqcenter = (pad_to - 1) // 2 + 1
+        else:
+            freqcenter = pad_to // 2
+        scaling_factor = 1.
     elif sides == 'onesided':
         if pad_to % 2:
             numFreqs = (pad_to + 1) // 2
@@ -623,11 +778,6 @@ def _spectral_helper(x, y=None, NFFT=None, Fs=None, detrend_func=None,
         result = np.conj(result) * result
     elif mode == 'magnitude':
         result = np.abs(result) / np.abs(windowVals).sum()
-    elif mode == 'angle' or mode == 'phase':
-        # we unwrap the phase later to handle the onesided vs. twosided case
-        result = np.angle(result)
-    elif mode == 'complex':
-        result /= np.abs(windowVals).sum()
 
     if mode == 'psd':
 
@@ -672,20 +822,3 @@ def _spectral_helper(x, y=None, NFFT=None, Fs=None, detrend_func=None,
         result = np.unwrap(result, axis=0)
     # print("_spectral_helper freqs:",freqs) # 等差数列0-22050, 43 为差,共512个
     return result, freqs, t
-
-# test
-# def rolling_window(a, window):
-# shape = a.shape[:-1] + (a.shape[-1] - window + 1, window)
-##shape:(4,3)  a.shape:(6,)   a.shape[:-1]:()   a.shape[-1]:6
-# print("shape",shape,a.shape,a.shape[:-1],a.shape[-1])
-# strides = a.strides + (a.strides[-1],)
-# print("strides:",a.strides,strides)
-# return np.lib.stride_tricks.as_strided(a, shape=shape, strides=strides)
-
-# a = np.array([1, 12, 3, 4, 5, 6]);
-# b = rolling_window(a, 3)
-# print("rolling_window:",b)
-# c = np.lib.stride_tricks.as_strided(a, shape=(4,3), strides=(4,4))
-# print("strides:",c)
-
-
